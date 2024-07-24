@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Identifier="93AACD45-642B-4D2A-ADC1-D01B4470BDE2" Version="2.0" Creator="SCRMAC-3.3.6-16304" Device="Artems-MacBook-Pro" Author="" Modified="2024-07-11 22:17:30 +0300" ModID="E234DA80-6A1E-4673-8865-1FD973265EF1">
+<ScrivenerProject Identifier="93AACD45-642B-4D2A-ADC1-D01B4470BDE2" Version="2.0" Creator="SCRMAC-3.3.6-16304" Device="Artems-MacBook-Pro" Author="" Modified="2024-07-15 12:44:07 +0300" ModID="B576B262-63AE-4399-8AC5-C8D0544F6878">
     <Binder>
         <BinderItem UUID="EEDC0094-F978-4587-998D-C9EFE7670981" Type="DraftFolder" Created="2024-05-21 19:41:51 +0300" Modified="2024-05-21 19:41:51 +0300">
             <Title>Draft</Title>
@@ -263,7 +263,7 @@
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>332,0</TextSelection>
+                                <TextSelection>469,0</TextSelection>
                             </TextSettings>
                             <Bookmarks>
                                 <Bookmark BinderUUID="603E56E9-F6F6-403A-A807-49EF03D7C94E"/>
@@ -394,6 +394,24 @@
                                 <TextSelection>485,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
+                        <BinderItem UUID="A674F8E0-67D0-46BD-901F-CB8115280B63" Type="Text" Created="2024-07-15 12:43:14 +0300" Modified="2024-07-15 12:43:33 +0300">
+                            <Title>Using Rust in Unreal Engine </Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                            </MetaData>
+                            <TextSettings>
+                                <TextSelection>0,0</TextSelection>
+                            </TextSettings>
+                        </BinderItem>
+                        <BinderItem UUID="887320FA-C507-4379-B259-5D1665BED088" Type="Text" Created="2024-07-15 12:43:37 +0300" Modified="2024-07-15 12:44:05 +0300">
+                            <Title>Unreal Engine Over The Air Logic Updates via WASM</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                            </MetaData>
+                            <TextSettings>
+                                <TextSelection>0,0</TextSelection>
+                            </TextSettings>
+                        </BinderItem>
                     </Children>
                 </BinderItem>
                 <BinderItem UUID="223680ED-25AC-47BD-A2F9-83CDFF50A52F" Type="Text" Created="2024-06-07 16:36:09 +0300" Modified="2024-06-12 11:49:32 +0300">
@@ -522,12 +540,12 @@
     </StatusSettings>
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="No" Deadline="2024-05-21 19:41:50 +0300" IgnoreDeadline="Yes">0</DraftTarget>
-        <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="Yes" NextResetDate="2024-07-12 01:00:00 +0300" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" WritingDays="" CanWriteOnDeadlineDate="No">0</SessionTarget>
-        <PreviousSession Words="81" Characters="479" Date="2024-07-11 20:34:10 +0300"/>
+        <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="Yes" NextResetDate="2024-07-16 01:00:00 +0300" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" WritingDays="" CanWriteOnDeadlineDate="No">0</SessionTarget>
+        <PreviousSession Words="0" Characters="0" Date="2024-07-15 12:43:08 +0300"/>
     </ProjectTargets>
-    <RecentWritingHistory Date="2024-07-11 00:00:00 +0300">
-        <DraftWordCount>81</DraftWordCount>
-        <DraftCharCount>479</DraftCharCount>
+    <RecentWritingHistory Date="2024-07-15 00:00:00 +0300">
+        <DraftWordCount>0</DraftWordCount>
+        <DraftCharCount>0</DraftCharCount>
         <OtherWordCount>0</OtherWordCount>
         <OtherCharCount>0</OtherCharCount>
     </RecentWritingHistory>
