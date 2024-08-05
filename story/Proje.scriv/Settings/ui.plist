@@ -10,6 +10,51 @@
 	<real>1.5</real>
 	<key>QRPanelSettings</key>
 	<dict>
+		<key>9C26F96F-54A9-464D-AF28-D2DEDF22F39E</key>
+		<dict>
+			<key>BinderUUID</key>
+			<string>9C26F96F-54A9-464D-AF28-D2DEDF22F39E</string>
+			<key>CurrentMetaData</key>
+			<integer>-1</integer>
+			<key>MainPaneWidth</key>
+			<real>440</real>
+			<key>ProjectBookmarksSplitInfo</key>
+			<array>
+				<string>{{0, 0}, {225, 495}}</string>
+				<string>{{235, 0}, {443, 495}}</string>
+			</array>
+			<key>ProjectBookmarksVisible</key>
+			<false/>
+			<key>ShowsFormatBar</key>
+			<true/>
+			<key>ShowsMetaData</key>
+			<false/>
+			<key>SplitInfo</key>
+			<array>
+				<string>{{0, 277}, {475, 167}}</string>
+			</array>
+			<key>TextSettings</key>
+			<dict>
+				<key>hasMultiplePages</key>
+				<false/>
+				<key>isRulerVisible</key>
+				<false/>
+				<key>lineNumberingInterval</key>
+				<integer>1</integer>
+				<key>showsLineNumbers</key>
+				<false/>
+				<key>textFocusMode</key>
+				<integer>0</integer>
+				<key>textScaleFactor</key>
+				<real>1.5</real>
+				<key>usesFacingPages</key>
+				<false/>
+				<key>usesTypewriterScrolling</key>
+				<false/>
+			</dict>
+			<key>WindowFrame</key>
+			<string>518 6 440 834 0 0 1512 944 </string>
+		</dict>
 		<key>A5FFF324-17F2-475B-BDC6-3DB8037AE2F4</key>
 		<dict>
 			<key>BinderUUID</key>
@@ -179,6 +224,11 @@
 			<key>Row</key>
 			<integer>-1</integer>
 		</dict>
+		<key>887320FA-C507-4379-B259-5D1665BED088</key>
+		<dict>
+			<key>Row</key>
+			<integer>-1</integer>
+		</dict>
 		<key>978B3B00-3BD4-4BEE-A1E5-A5384969C740</key>
 		<dict>
 			<key>Row</key>
@@ -211,10 +261,17 @@
 			<key>Row</key>
 			<integer>0</integer>
 		</dict>
-		<key>A75972F1-5A68-436F-83E8-897AEBEFC22F</key>
+		<key>A674F8E0-67D0-46BD-901F-CB8115280B63</key>
 		<dict>
 			<key>Row</key>
 			<integer>-1</integer>
+		</dict>
+		<key>A75972F1-5A68-436F-83E8-897AEBEFC22F</key>
+		<dict>
+			<key>DocID</key>
+			<string>5EF6705D-2D7D-43DF-86B2-001B05730A67</string>
+			<key>Row</key>
+			<integer>0</integer>
 		</dict>
 		<key>ADD9FD7E-F46B-47FB-B0D2-B4B9720D549C</key>
 		<dict>
@@ -270,6 +327,11 @@
 			<key>Row</key>
 			<integer>-1</integer>
 		</dict>
+		<key>EACE0868-F742-4D6E-95B9-981011B29E5D</key>
+		<dict>
+			<key>Row</key>
+			<integer>-1</integer>
+		</dict>
 		<key>ED995A80-8F90-49F6-A1E1-AE230073DA0E</key>
 		<dict>
 			<key>DocID</key>
@@ -302,7 +364,6 @@
 	</dict>
 	<key>editorSplitFrames</key>
 	<array>
-		<string>{{0, 0}, {622, 839}}</string>
 		<string>{{623, 0}, {623, 839}}</string>
 	</array>
 	<key>fullScreenBackgroundFade</key>
@@ -338,7 +399,7 @@
 		<real>1.5</real>
 	</dict>
 	<key>mainDocumentEditor.scrollRect</key>
-	<string>{{0, 0}, {415.33333333333331, 522}}</string>
+	<string>{{-105.33333333333333, 751.33333333333326}, {830.66666666666663, 522}}</string>
 	<key>mainDocumentEditor.textEditorState</key>
 	<dict>
 		<key>textScaleFactor</key>
@@ -352,13 +413,13 @@
 		<real>1.5</real>
 	</dict>
 	<key>supportingDocumentEditor.scrollRect</key>
-	<string>{{-105.33333333333333, 751.33333333333326}, {830.66666666666663, 522}}</string>
+	<string>{{0, 0}, {415.33333333333331, 522}}</string>
 	<key>supportingDocumentEditor.textEditorState</key>
 	<dict>
 		<key>textScaleFactor</key>
 		<real>1.5</real>
 	</dict>
 	<key>supportingDocumentViewIsCurrent</key>
-	<true/>
+	<false/>
 </dict>
 </plist>
