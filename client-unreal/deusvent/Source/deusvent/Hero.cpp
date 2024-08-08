@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Hero.h"
+#include "logic/logic.hpp"
 
 // Sets default values
 AHero::AHero()
@@ -13,6 +14,8 @@ AHero::AHero()
 void AHero::BeginPlay()
 {
 	Super::BeginPlay();
+	auto result = logic::add(11, 13);
+	UE_LOG(LogTemp, Display, TEXT("Result=%u"), result);
 }
 
 // Called every frame

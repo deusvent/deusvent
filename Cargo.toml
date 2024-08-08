@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "api",
+    "logic",
+    "logic-binding-cpp",
+    "logic-binding-wasm",
+]
