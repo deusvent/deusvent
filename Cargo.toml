@@ -2,7 +2,9 @@
 resolver = "2"
 
 members = [
-    "api",
+    "api/lambda-health",
+    "api/lambda-ws-connect",
+    "api/lambda-ws-disconnect",
     "logic",
     "logic-binding-cpp",
     "logic-binding-wasm",
