@@ -17,3 +17,8 @@ module "domain" {
   www-destination-name           = module.www.cloudfront_domain
   www-destination-hosted_zone_id = module.www.cloudfron_zone_id
 }
+
+module "api" {
+  source = "./api"
+  certificate-arn = module.domain.certificate_arn
+}
