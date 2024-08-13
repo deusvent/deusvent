@@ -13,7 +13,7 @@ public class deusvent : ModuleRules
 			"InputCore",
 			"EnhancedInput",
 		});
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "CADKernel" });
 
 		// Logic lib
 		CppStandard = CppStandardVersion.Cpp20;
@@ -34,6 +34,14 @@ public class deusvent : ModuleRules
 		else
 		{
 			PublicAdditionalLibraries.Add("sqlite3");
+		}
+		
+		// Enable testing for non production builds
+		if (Target.Configuration != UnrealTargetConfiguration.Shipping)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[] {
+				"AutomationController",
+			});
 		}
 	}
 }
