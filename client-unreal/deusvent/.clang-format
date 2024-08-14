@@ -1,0 +1,13 @@
+# Make it look similar to the Rust rustfmt
+
+BasedOnStyle: LLVM
+IndentWidth: 4            
+UseTab: Never              
+ColumnLimit: 100           
+BreakBeforeBraces: Attach  
+AllowShortFunctionsOnASingleLine: None
+AlignAfterOpenBracket: Align 
+SpaceBeforeParens: ControlStatements
+BinPackArguments: false    
+BinPackParameters: false   
+SortIncludes: false # Unreal requires last include to be .generated.h, so let's disable sorting completely

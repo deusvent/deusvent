@@ -13,10 +13,12 @@ void ensure_initialized() {
     auto scaffolding_contract_version = ffi_logic_uniffi_contract_version();
 
     if (bindings_contract_version != scaffolding_contract_version) {
-        throw std::runtime_error("UniFFI contract version mismatch: try cleaning and rebuilding your project");
+        throw std::runtime_error(
+            "UniFFI contract version mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_func_add() != 27736) {
-        throw std::runtime_error("UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
 }
 
@@ -26,10 +28,9 @@ void initialize() {
     static std::once_flag init_flag;
     std::call_once(init_flag, ensure_initialized);
 }
-}
+} // namespace
 
-template <typename F>
-void check_rust_call(const RustCallStatus &status, F error_cb) {
+template <typename F> void check_rust_call(const RustCallStatus &status, F error_cb) {
     switch (status.code) {
     case 0:
         return;
@@ -51,11 +52,14 @@ void check_rust_call(const RustCallStatus &status, F error_cb) {
     throw std::runtime_error("Unexpected Rust call status");
 }
 
-template <typename F, typename EF, typename... Args, typename R = std::invoke_result_t<F, Args..., RustCallStatus *>>
+template <typename F,
+          typename EF,
+          typename... Args,
+          typename R = std::invoke_result_t<F, Args..., RustCallStatus *>>
 R rust_call(F f, EF error_cb, Args... args) {
     initialize();
 
-    RustCallStatus status = { 0 };
+    RustCallStatus status = {0};
 
     if constexpr (std::is_void_v<R>) {
         f(args..., &status);
@@ -69,7 +73,7 @@ R rust_call(F f, EF error_cb, Args... args) {
 }
 
 RustBuffer rustbuffer_alloc(int32_t len) {
-    RustCallStatus status = { 0 };
+    RustCallStatus status = {0};
     auto buffer = ffi_logic_rustbuffer_alloc(len, &status);
 
     check_rust_call(status, nullptr);
@@ -78,7 +82,7 @@ RustBuffer rustbuffer_alloc(int32_t len) {
 }
 
 RustBuffer rustbuffer_from_bytes(const ForeignBytes &bytes) {
-    RustCallStatus status = { 0 };
+    RustCallStatus status = {0};
     auto buffer = ffi_logic_rustbuffer_from_bytes(bytes, &status);
 
     check_rust_call(status, nullptr);
@@ -87,12 +91,11 @@ RustBuffer rustbuffer_from_bytes(const ForeignBytes &bytes) {
 }
 
 void rustbuffer_free(RustBuffer buf) {
-    RustCallStatus status = { 0 };
+    RustCallStatus status = {0};
 
     ffi_logic_rustbuffer_free(std::move(buf), &status);
     check_rust_call(status, nullptr);
 }
-
 
 uint32_t FfiConverterUInt32::lift(uint32_t val) {
     return val;
@@ -126,7 +129,7 @@ std::string FfiConverterString::lift(RustBuffer buf) {
 
 RustBuffer FfiConverterString::lower(const std::string &val) {
     auto len = static_cast<int32_t>(val.length());
-    auto bytes = ForeignBytes { len, reinterpret_cast<uint8_t *>(const_cast<char *>(val.data())) };
+    auto bytes = ForeignBytes{len, reinterpret_cast<uint8_t *>(const_cast<char *>(val.data()))};
 
     return rustbuffer_from_bytes(bytes);
 }
@@ -153,18 +156,13 @@ int32_t FfiConverterString::allocation_size(const std::string &val) {
 }
 } // namespace uniffi
 
-
-
-
-namespace uniffi {
-
-
-}
+namespace uniffi {}
 
 uint32_t add(uint32_t a, uint32_t b) {
-    auto ret = uniffi::rust_call(
-        uniffi_logic_fn_func_add,
-        nullptr, uniffi::FfiConverterUInt32::lower(a), uniffi::FfiConverterUInt32::lower(b));
+    auto ret = uniffi::rust_call(uniffi_logic_fn_func_add,
+                                 nullptr,
+                                 uniffi::FfiConverterUInt32::lower(a),
+                                 uniffi::FfiConverterUInt32::lower(b));
 
     return uniffi::FfiConverterUInt32::lift(ret);
 }

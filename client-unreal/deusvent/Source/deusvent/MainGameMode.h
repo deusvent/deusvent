@@ -9,7 +9,6 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogMainGameMode, Log, All);
 
 UCLASS()
-class DEUSVENT_API AMainGameMode : public AGameModeBase
-{
-	GENERATED_BODY()
+class DEUSVENT_API AMainGameMode : public AGameModeBase {
+    GENERATED_BODY()
 };
