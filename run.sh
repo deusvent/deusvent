@@ -41,6 +41,9 @@ lint() {
   log "Linting all the Rust projects"
   cargo fmt --all --check
   cargo clippy --workspace --all-targets --all-features -- -D warnings
+  find client-unreal -name "*.cpp" -o -name "*.h" \
+    | grep -v "Intermediate/Build" \
+    | xargs clang-format --Werror -style=file -dry-run
 }
 
 s3_site_sync() {
