@@ -1,0 +1,28 @@
+name: ci
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:  
+  merge_group:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: cache-cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: cargo-linux-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: cargo-linux
+    - run: ./run.sh deps
+    - run: ./run.sh build
+    - run: ./run.sh test
+    - run: ./run.sh lint
