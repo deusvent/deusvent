@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <title>{% block title %} {% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="stylesheet" href="/reset.css" />
+    <link rel="stylesheet" href="/base.css" />
+    {% block head %} {% endblock %}
+  </head>
+  <body>
+    <div class="content">{% block content %} {% endblock %}</div>
+    <br />
+    <br />
+    <div class="menu">
+      <menu>
+        <li><a href="mailto:contacts@deusvent.com">Contact us</a></li>
+        <li><a href="https://github.com/deusvent/deusvent">GitHub</a></li>
+      </menu>
+    </div>
+  </body>
+</html>
