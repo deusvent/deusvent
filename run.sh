@@ -60,7 +60,7 @@ deploy() {
   local service="$1"
   log "Deploying $service"
   if [[ "$service" == "www" ]]; then 
-    (cd www && docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app ghcr.io/getzola/zola:v0.17.1 build)
+    (cd www && docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app ghcr.io/getzola/zola:v0.19.2 build)
     s3_site_sync "www/public" "s3://deusvent-site-www"
   elif [[ "$service" == api* ]]; then
     deploy_lambdas "$service"
