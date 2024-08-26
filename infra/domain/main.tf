@@ -39,6 +39,19 @@ resource "aws_route53_record" "naked" {
   }
 }
 
+resource "aws_route53_record" "api" {
+  zone_id = aws_route53_zone.deusvent.zone_id
+  name    = "api.deusvent.com"
+  type    = "A"
+
+  alias {
+    name                   = var.api-destination-name
+    zone_id                = var.api-destination-hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+
 resource "aws_acm_certificate" "certificate" {
   domain_name               = "*.deusvent.com"
   validation_method         = "EMAIL"

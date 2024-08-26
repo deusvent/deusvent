@@ -9,15 +9,16 @@ AHero::AHero() {
 
 void AHero::BeginPlay() {
     Super::BeginPlay();
-    auto result = logic::add(11, 13);
-    UE_LOG(LogTemp, Display, TEXT("Result=%u"), result);
+    // Testing of Rust integration
+    const auto Result = logic::add(11, 13);
+    UE_LOG(LogTemp, Display, TEXT("Result=%u"), Result);
 
-    // TODO Temp testing of websocket connection
-    auto gameInstance =
+    // Testing of WebSocket connection
+    const auto GameInstance =
         Cast<UMainPlatformGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-    gameInstance->connection->OnPong().AddUObject(this, &AHero::OnPong);
-    gameInstance->connection->OnPong().AddUObject(this, &AHero::OnPong2);
-    gameInstance->connection->SendHealth();
+    GameInstance->Connection->OnPong().AddUObject(this, &AHero::OnPong);
+    GameInstance->Connection->OnPong().AddUObject(this, &AHero::OnPong2);
+    GameInstance->Connection->SendHealth();
 }
 
 void AHero::OnPong() {
@@ -26,14 +27,4 @@ void AHero::OnPong() {
 
 void AHero::OnPong2() {
     UE_LOG(LogTemp, Display, TEXT("AHero::OnPong2"));
-}
-
-// Called every frame
-void AHero::Tick(float DeltaTime) {
-    Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void AHero::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent) {
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
