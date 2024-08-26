@@ -1,3 +1,4 @@
 target
 .terraform
 empty-lambda.zip
+www/public

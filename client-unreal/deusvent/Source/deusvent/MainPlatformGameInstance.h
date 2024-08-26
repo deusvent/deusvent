@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintPlatformLibrary.h"
-#include "WSConnection.h"
+#include "Connection.h"
 #include "MainPlatformGameInstance.generated.h"
 
 UCLASS()
@@ -12,6 +12,6 @@ class DEUSVENT_API UMainPlatformGameInstance : public UPlatformGameInstance {
   public:
     virtual void Init() override;
 
-    UPROPERTY();
-    UWSConnection *connection;
+    UPROPERTY()
+    UConnection *Connection;
 };

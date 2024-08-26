@@ -80,6 +80,10 @@
 		{
 			"Name": "TestSamples",
 			"Enabled": true
+		},
+		{
+			"Name": "WebSocketNetworking",
+			"Enabled": true
 		}
 	]
 }

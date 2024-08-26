@@ -87,7 +87,13 @@ resource "aws_apigatewayv2_integration" "lambda" {
 
 resource "aws_lambda_permission" "api_gateway_invoke_permission" {
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.arn
+  function_name = aws_lambda_function.lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${var.gateway_execution_arn}/*/*/*"
+  source_arn    = "${var.gateway_execution_arn}/*"
+}
+
+resource "aws_apigatewayv2_route_response" "response" {
+  api_id             = var.gateway_id
+  route_id           = aws_apigatewayv2_route.route.id
+  route_response_key = "$default"
 }
