@@ -18,7 +18,19 @@ public class deusvent : ModuleRules
 
 		// Logic lib
 		CppStandard = CppStandardVersion.Cpp20;
-		PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.a"));
+		
+		if (Target.Platform == UnrealTargetPlatform.IOS)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.arm64.ios.a"));
+		}
+		else if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.arm64.darwin.a"));
+		}
+		else
+		{
+			throw new System.Exception("Unsupported platform: " + Target.Platform);
+		}
 
 		// We assume sqlite3 is available everywhere
 		// TODO Paths looks very specific to my machine, let's check if those are the same on CI once we have it
