@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
-using System.Collections.Generic;
 
 public class deusventTarget : TargetRules
 {
@@ -11,5 +10,9 @@ public class deusventTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("deusvent");
+
+		// Exceptions are needed for Rust C++ wrappers
+		bForceEnableExceptions = true;
+		bOverrideBuildEnvironment = true;
 	}
 }
