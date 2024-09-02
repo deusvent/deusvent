@@ -24,3 +24,33 @@ module "api" {
   source          = "./api"
   certificate-arn = module.domain.certificate_arn
 }
+
+module "storage" {
+  source     = "./storage"
+  table-name = "game_data"
+}
+
+# Following setup is for CI and testing purposes
+
+module "storage_test" {
+  source     = "./storage"
+  table-name = "game_data_test"
+}
+
+module "user_ci" {
+  source = "./user"
+  name   = "ci"
+  iam_policies = [
+    module.storage_test.iam_reader,
+    module.storage_test.iam_writer
+  ]
+}
+
+output "user_ci_access_key" {
+  value = module.user_ci.access_key_id
+}
+
+output "user_ci_access_secret" {
+  value     = module.user_ci.access_key_secret
+  sensitive = true
+}
