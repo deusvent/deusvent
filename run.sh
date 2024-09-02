@@ -33,7 +33,7 @@ build() {
 # Run all the tests
 test() {
   log "Testing all Rust projects"
-  cargo test --release
+  cargo test --release -- --nocapture
 }
 
 # Run linters and other static checkers

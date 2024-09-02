@@ -5,6 +5,7 @@ members = [
     "api/lambda-health",
     "api/lambda-ws-connect",
     "api/lambda-ws-disconnect",
+    "api/core",
     "logic",
     "logic-binding-cpp",
     "logic-binding-wasm",
