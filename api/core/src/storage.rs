@@ -182,7 +182,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_dynamodb_storage() {
-        if std::env::var("AWS_PROFILE").is_err() && std::env::var("AWS_ACCESS_KEY_ID=").is_err() {
+        if std::env::var("AWS_PROFILE").is_err() && std::env::var("CI").is_err() {
             println!("No AWS credentials set, skipping DynamoDB test");
             return;
         }
