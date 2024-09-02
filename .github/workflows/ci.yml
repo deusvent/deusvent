@@ -23,6 +23,7 @@ jobs:
         key: cargo-linux-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: cargo-linux
     - uses: aws-actions/configure-aws-credentials@v4
+      if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets, skip this step
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
