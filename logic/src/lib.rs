@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+//! Main shared library which is used across all the clients and servers
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#![deny(missing_docs)] // Logic is a main shared library - require docs for all public interfaces
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod auth;
+pub mod date;
+pub mod messages;
+pub mod time;
