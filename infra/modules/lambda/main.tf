@@ -71,6 +71,15 @@ resource "aws_lambda_function" "lambda" {
       source_code_hash # We deploy new version via CI, so it can be ignored
     ]
   }
+  environment {
+    variables = var.env_variables
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "iam_policies" {
+  for_each   = toset(var.iam_policies)
+  role       = aws_iam_role.access.name
+  policy_arn = each.value
 }
 
 resource "aws_apigatewayv2_route" "route" {

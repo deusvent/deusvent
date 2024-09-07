@@ -43,20 +43,28 @@ output "api_gateway_zone_id" {
 }
 
 locals {
-  lambda_routes = {
-    health        = "health"
-    ws-connect    = "$connect"
-    ws-disconnect = "$disconnect"
-  }
+  // Configuration for all API lambdas, following keys are supported:
+  // - name: name of a lambda, required
+  // - route: API Gateway routing key, required
+  // - iam_policies: Array of IAM policies to be attached to the lambda
+  // - env_variables: Map of environment variables for the lambda
+  lambdas = [
+    { name = "health", route = "health" },
+    { name = "ws-connect", route = "$connect" },
+    { name = "ws-disconnect", route = "$disconnect" },
+    { name = "auth-register", route = "auth.register", env_variables = { JWT_SECRET = var.jwt_auth_secret } },
+  ]
 }
 
 module "lambda_routes" {
   source                = "../modules/lambda"
-  for_each              = local.lambda_routes
-  function_name         = each.key
-  route_key             = each.value
   gateway_id            = aws_apigatewayv2_api.api.id
   gateway_execution_arn = aws_apigatewayv2_api.api.execution_arn
+  for_each              = { for idx, lambda in local.lambdas : lambda.name => lambda }
+  function_name         = each.value.name
+  route_key             = each.value.route
+  iam_policies          = lookup(each.value, "iam_policies", [])
+  env_variables         = lookup(each.value, "env_variables", {})
 }
 
 // Logs
