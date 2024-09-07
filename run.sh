@@ -30,7 +30,7 @@ build() {
   cargo build --release --all-features
 
   log "Validating Terraform files"
-  (cd infra && terraform validate)
+  (cd infra && terraform init && terraform validate)
 }
 
 # Run all the tests
