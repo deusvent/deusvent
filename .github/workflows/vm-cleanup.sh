@@ -17,7 +17,7 @@ sudo rm -rf \
   /usr/local/share/chromium \
   /usr/local/lib/node_modules
 
-# Those commands takes time to run, uncomment if you need even more space
+# Those commands takes around 1.5 minutes to run, uncomment if you need even more space
 # sudo docker image prune --all --force
 # sudo apt -y -qq -o=Dpkg::Use-Pty=0 remove -y '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' \
 #   azure-cli google-* google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri
