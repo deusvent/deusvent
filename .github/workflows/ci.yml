@@ -32,3 +32,14 @@ jobs:
     - run: ./run.sh build
     - run: ./run.sh test
     - run: ./run.sh lint
+  client_unreal:
+    runs-on: ubuntu-latest
+    needs: build
+    container:
+      image: ghcr.io/epicgames/unreal-engine:dev-slim-5.4
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+    - run: ls -la
