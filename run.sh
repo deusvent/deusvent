@@ -51,6 +51,7 @@ build() {
     # https://dev.epicgames.com/documentation/en-us/unreal-engine/container-deployments-and-images-for-unreal-editor-and-unreal-engine
     echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_TOKEN_USER --password-stdin
     commands=$(cat <<'EOF'
+      sudo chown -R $(id -u):$(id -g) /src/client-unreal/deusvent && \
       sudo apt-get update && \
       sudo apt-get install libsqlite3-dev && \
       /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
