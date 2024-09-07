@@ -70,7 +70,9 @@ build() {
         -archivedirectory=$PWD/Build/Linux
 EOF
 )
-    docker run -v $PWD:/src -w /src/client-unreal/deusvent --rm ghcr.io/epicgames/unreal-engine:dev-slim-5.4.3 bash -c "$commands"
+    uid=$(id -u)
+    gid=1000
+    docker run -v $PWD:/src -w /src/client-unreal/deusvent --rm ghcr.io/epicgames/unreal-engine:dev-slim-5.4.3 --user $uid:$gid bash -c "$commands"
   fi
 }
 

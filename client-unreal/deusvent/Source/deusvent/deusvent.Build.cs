@@ -58,7 +58,6 @@ public class deusvent : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			// SQLiteCore is a default plugin, so I suppose linking public sqlite3.h header from there is fine
 			PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Runtime/Database/SQLiteCore/Source/SQLiteCore/Public/sqlite"));
 			PublicAdditionalLibraries.Add("/usr/lib/x86_64-linux-gnu/libsqlite3.so");
 		}
