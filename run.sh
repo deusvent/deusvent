@@ -28,6 +28,13 @@ deps() {
 build() {
   log "Building all Rust projects"
   cargo build --release --all-features
+
+  log "Validating Terraform files"
+  if [ ! -d "infra/.terraform" ] && [ -n "$CI" ]; then
+    # To run validation we need to init Terraform, but with no backend as state is not accessible from the CI
+    (cd infra && terraform init -backend=false)
+  fi
+  (cd infra && terraform validate)
 }
 
 # Run all the tests
@@ -41,9 +48,14 @@ lint() {
   log "Linting all the Rust projects"
   cargo fmt --all --check
   cargo clippy --workspace --all-targets --all-features -- -D warnings
+  
+  log "Linting C++ files"
   find client-unreal -name "*.cpp" -o -name "*.h" \
     | grep -v "Intermediate/Build" \
     | xargs clang-format --Werror -style=file -dry-run
+  
+  log "Linting Terraform files"
+  (cd infra && terraform fmt -check -recursive)
 }
 
 s3_site_sync() {
@@ -83,16 +95,6 @@ deploy_lambdas() {
         --no-cli-pager
     fi
   done
-
-  # lambdas=("health" "delete" "find" "set")
-  # log "Buidling all lambdas"
-  # for lambda in "${lambdas[@]}"; do
-  #   
-  # done
-  # log "Deploying all lambdas"
-  # for lambda in "${lambdas[@]}"; do
-  #   
-  # done
 }
 
 
