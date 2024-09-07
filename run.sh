@@ -30,7 +30,11 @@ build() {
   cargo build --release --all-features
 
   log "Validating Terraform files"
-  (cd infra && terraform init && terraform validate)
+  if [ ! -d "infra/.terraform" ] && [ -n "$CI" ]; then
+    # To run validation we need to init Terraform, but with no backend as state is not accessible from the CI
+    (cd infra && terraform init -backend=false)
+  fi
+  (cd infra && terraform validate)
 }
 
 # Run all the tests
