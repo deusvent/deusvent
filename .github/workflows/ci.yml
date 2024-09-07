@@ -33,11 +33,12 @@ jobs:
     - run: ./run.sh lint
   client_unreal:
     runs-on: ubuntu-latest
+    env:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      GHCR_TOKEN_USER: ${{ secrets.GHCR_TOKEN_USER }}
     steps:
     - uses: actions/checkout@v4
     - run: ./.github/workflows/vm-cleanup.sh # Cleanup space so unreal-engine Docker image would fit
-    - run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.GHCR_TOKEN_USER }} --password-stdin
-    - run: docker pull --max-concurrent-downloads=10 ghcr.io/epicgames/unreal-engine:dev-slim-5.4
-    - run: docker run -v $PWD:/src -w /src ghcr.io/epicgames/unreal-engine:dev-slim-5.4 ls -la         
+    - run: ./run.sh build client-unreal
 
     

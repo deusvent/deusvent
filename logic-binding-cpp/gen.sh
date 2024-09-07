@@ -1,15 +1,17 @@
-# Build arm64 builds for both MacOS and iOS
-cargo build --release --target=aarch64-apple-darwin \
-                      --target=aarch64-apple-ios
-cp ../target/aarch64-apple-darwin/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.darwin.ios.a
+# Build logic for all needed platforms
+cargo build --release --target=x86_64-unknown-linux-gnu \
+                      --target=aarch64-apple-ios \
+                      --target=aarch64-apple-darwin \
+                      --target=aarch64-linux-android
+
+cp ../target/x86_64-unknown-linux-gnu/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.amd64.linux.a
 cp ../target/aarch64-apple-ios/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.arm64.ios.a
+cp ../target/aarch64-apple-darwin/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.arm64.darwin.a
+cp ../target/aarch64-linux-android/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.arm64.android.a
 
 # Generate C++ wrapper
 rm -rf ../client-unreal/deusvent/Source/deusvent/logic/*
 uniffi-bindgen-cpp src/logic.udl --out-dir ../client-unreal/deusvent/Source/deusvent/logic
-
-# HACK Fix for compiling error, see https://github.com/NordSecurity/uniffi-bindgen-cpp/pull/42
-sed -i "" 's/streambuf(RustStreamBuffer(buf)), std::basic_iostream<char>(&streambuf)/std::basic_iostream<char>(\&streambuf), streambuf(RustStreamBuffer(buf))/' ../client-unreal/deusvent/Source/deusvent/logic/logic.hpp
 
 # Format using our style
 (cd .. && clang-format --Werror -i -style=file client-unreal/deusvent/Source/deusvent/logic/logic.cpp)
