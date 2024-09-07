@@ -39,6 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: ./.github/workflows/vm-cleanup.sh # Cleanup space so unreal-engine Docker image would fit
-    - run: ./run.sh build client-unreal
+    - run: ./run.sh deps
+    - run: ./run.sh build client-unreal      
 
     
