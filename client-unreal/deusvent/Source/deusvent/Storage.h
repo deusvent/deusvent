@@ -46,5 +46,5 @@ class DEUSVENT_API UStorage : public UObject {
     TFuture<TArray<FString>> Values(const FString &KeyPrefix) const;
 
   private:
-    class sqlite3 *DB;
+    struct sqlite3 *DB;
 };

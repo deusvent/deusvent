@@ -18,7 +18,7 @@ public class deusvent : ModuleRules
 
 		// Logic lib
 		CppStandard = CppStandardVersion.Cpp20;
-		
+
 		if (Target.Platform == UnrealTargetPlatform.IOS)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.arm64.ios.a"));
@@ -27,9 +27,17 @@ public class deusvent : ModuleRules
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.arm64.darwin.a"));
 		}
+		else if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.amd64.linux.a"));
+		}
+		else if (Target.Platform == UnrealTargetPlatform.Android)
+		{
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../ThirdParty/liblogic.arm64.android.a"));
+		}
 		else
 		{
-			throw new System.Exception("Unsupported platform: " + Target.Platform);
+			throw new System.Exception("Unsupported platform for liblogic: " + Target.Platform);
 		}
 
 		// We assume sqlite3 is available everywhere
@@ -48,9 +56,14 @@ public class deusvent : ModuleRules
 					"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/");
 			PublicAdditionalLibraries.Add(Path.Combine(SDKPath, "libsqlite3.tbd"));
 		}
+		else if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Runtime/Database/SQLiteCore/Source/SQLiteCore/Public/sqlite"));
+			PublicAdditionalLibraries.Add("/usr/lib/x86_64-linux-gnu/libsqlite3.so");
+		}
 		else
 		{
-			PublicAdditionalLibraries.Add("sqlite3");
+			throw new System.Exception("Unsupported platform for sqlite3: " + Target.Platform);
 		}
 
 		// Enable testing for non production builds
