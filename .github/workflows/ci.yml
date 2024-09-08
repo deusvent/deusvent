@@ -7,20 +7,19 @@ on:
   workflow_dispatch:  
   merge_group:
 jobs:
+  
+  # All the common logic, API, lambdas, Terraform
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
         path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
+          ~/.cargo
           target/
         key: cargo-linux-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: cargo-linux
+    - uses: actions/checkout@v4
     - uses: aws-actions/configure-aws-credentials@v4
       if: github.actor != 'dependabot[bot]' # Dependabot doesn't have access to secrets, skip this step
       with:
@@ -31,12 +30,21 @@ jobs:
     - run: ./run.sh build
     - run: ./run.sh test
     - run: ./run.sh lint
+  
+  # Separate job for the Unreal Engine client as it's a heavy process
   client_unreal:
     runs-on: ubuntu-latest
     env:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
       GHCR_TOKEN_USER: ${{ secrets.GHCR_TOKEN_USER }}
     steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo
+          target/
+        key: cargo-linux-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: cargo-linux
     - uses: actions/checkout@v4
     - run: ./.github/workflows/vm-cleanup.sh # Cleanup space so unreal-engine Docker image would fit
     - run: ./run.sh deps

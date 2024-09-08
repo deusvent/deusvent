@@ -32,21 +32,10 @@ deps() {
 # Builds everything
 build() {
   local target="$1"
-  
-  log "Validating Terraform files"
-  if [ ! -d "infra/.terraform" ] && [ -n "$CI" ]; then
-    # To run validation we need to init Terraform, but with no backend as state is not accessible from the CI
-    (cd infra && terraform init -backend=false)
-  fi
-  (cd infra && terraform validate)
-  
-  log "Building all Rust projects"
-  cargo build --release --all-features
-  
-  log "Building logic"
-  (cd logic-binding-cpp && ./gen.sh)
-  
+
   if [[ "$target" == "client-unreal" ]]; then
+    log "Building logic"
+    (cd logic-binding-cpp && ./gen.sh)
     # Build client-unreal using Docker containers with linux. Read here how to get access and tokens for yourself:
     # https://dev.epicgames.com/documentation/en-us/unreal-engine/container-deployments-and-images-for-unreal-editor-and-unreal-engine
     echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_TOKEN_USER --password-stdin
@@ -75,6 +64,19 @@ EOF
                --workdir /src/client-unreal/deusvent \
                --rm \
                ghcr.io/epicgames/unreal-engine:dev-slim-5.4.3 bash -c "$commands"
+    else 
+      log "Validating Terraform files"
+      if [ ! -d "infra/.terraform" ] && [ -n "$CI" ]; then
+        # To run validation we need to init Terraform, but with no backend as state is not accessible from the CI
+        (cd infra && terraform init -backend=false)
+      fi
+      (cd infra && terraform validate)
+      
+      log "Building all Rust projects"
+      cargo build --release --all-features
+
+      log "Building logic"
+      (cd logic-binding-cpp && ./gen.sh)
   fi
 }
 
