@@ -34,6 +34,9 @@ jobs:
   # Separate job for the Unreal Engine client as it's a heavy process
   client_unreal:
     runs-on: ubuntu-latest
+    # Dependabot doesn't have access to secrets which we need for pulling unreal-engine image. 
+    # But it's updates should not effect the client build in any way, so skipping is fine
+    if: github.actor != 'dependabot[bot]'
     env:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
       GHCR_TOKEN_USER: ${{ secrets.GHCR_TOKEN_USER }}
