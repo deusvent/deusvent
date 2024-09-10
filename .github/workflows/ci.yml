@@ -52,5 +52,6 @@ jobs:
     - run: ./.github/workflows/vm-cleanup.sh # Cleanup space so unreal-engine Docker image would fit
     - run: ./run.sh deps
     - run: ./run.sh build client-unreal      
+    - run: ./run.sh test client-unreal
 
     

@@ -1,10 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+UNREAL_IMAGE="ghcr.io/epicgames/unreal-engine:dev-slim-5.4.3"
+
 usage() {
   echo "Usage:
-    ./run.sh build [ unreal-client ]
-    ./run.sh test   
+    ./run.sh build [ client-unreal ]
+    ./run.sh test [ client-unreal ]
     ./run.sh deploy [ client-web | api/[lambda-name] | www ]
     ./run.sh lint   
     ./run.sh deps"
@@ -29,21 +31,20 @@ deps() {
   cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.6.2+v0.25.0
 }
 
-# Builds everything
+# Builds everything, pass "client-unreal" to build the client or keep empty to test everything else
 build() {
   local target="$1"
 
   if [[ "$target" == "client-unreal" ]]; then
     log "Building logic"
     (cd logic-binding-cpp && ./gen.sh)
+    
     # Build client-unreal using Docker containers with linux. Read here how to get access and tokens for yourself:
     # https://dev.epicgames.com/documentation/en-us/unreal-engine/container-deployments-and-images-for-unreal-editor-and-unreal-engine
     echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_TOKEN_USER --password-stdin
     commands=$(cat <<'EOF'
       sudo chown -R $(id -u):$(id -g) /src/client-unreal/deusvent && \
-      sudo apt-get update && \
-      sudo apt-get install libsqlite3-dev && \
-      /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+      /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh  BuildCookRun \
         -platform=Linux \
         -clientconfig=Development \
         -serverconfig=Development \
@@ -56,14 +57,14 @@ build() {
         -prereqs \
         -pak \
         -archive \
-        -archivedirectory=/tmp
+        -archivedirectory=/src/client-unreal/deusvent/Build
 EOF
 )
     docker run --volume $PWD:/src \
                --workdir /src/client-unreal/deusvent \
                --rm \
-               ghcr.io/epicgames/unreal-engine:dev-slim-5.4.3 bash -c "$commands"
-    else 
+               $UNREAL_IMAGE bash -c "$commands"
+  else 
       log "Validating Terraform files"
       if [ ! -d "infra/.terraform" ] && [ -n "$CI" ]; then
         # To run validation we need to init Terraform, but with no backend as state is not accessible from the CI
@@ -79,10 +80,32 @@ EOF
   fi
 }
 
-# Run all the tests
+# Run all the tests, pass "client-unreal" to test the client or keep empty to test everything else
 test() {
-  log "Testing all Rust projects"
-  cargo test --release -- --nocapture
+  local target="$1"
+  if [[ "$target" == "client-unreal" ]]; then
+    local game="./client-unreal/deusvent/Build/Linux/deusvent/Binaries/Linux/deusvent"
+    if [ ! -f "$game" ]; then
+      log "Error: game client missing. Build it first using './run.sh build client-unreal'"
+      exit 1
+    fi
+    commands=$(cat <<'EOF'
+      cd /src/client-unreal/deusvent/Build/Linux/deusvent/Binaries/Linux && \
+      ./deusvent -ExecCmds="Automation RunTest Deusvent;Quit" \
+                 -nullrhi \
+                 -nosound
+EOF
+)
+    # tty options is needed, otherwise logs got truncated
+    docker run --volume $PWD:/src \
+               --workdir /src/client-unreal/deusvent \
+               --rm \
+               --tty \
+               $UNREAL_IMAGE bash -c "$commands"
+  else
+    log "Testing all Rust projects"
+    cargo test --release -- --nocapture
+  fi
 }
 
 # Run linters and other static checkers
@@ -142,7 +165,7 @@ deploy_lambdas() {
 
 case "$ACTION" in
   "build") build "$PARAM" ;;
-  "test") test ;;
+  "test") test "$PARAM" ;;
   "deploy") deploy "$PARAM" ;;
   "deps") deps ;;
   "lint") lint ;;
