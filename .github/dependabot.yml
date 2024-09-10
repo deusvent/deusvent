@@ -2,8 +2,13 @@ version: 2
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
+    ignore:
+      - dependency-name: "uniffi"
+        # We are using `uniffi-bindgen-cpp` which depends on a specific version of `uniffi`. To upgrade manually edit version 
+        # in `./run.sh deps` and upgrade to corresponding version of uniffi in `logic-binding-cpp`
+        versions: ["0.25.0"] 
     schedule:
-      interval: "weekly"
+      interval: "weekly"      
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

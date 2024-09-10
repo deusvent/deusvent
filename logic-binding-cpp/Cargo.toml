@@ -8,7 +8,7 @@ crate-type = [ "staticlib" ]
 name = "logic"
 
 [dependencies]
-uniffi = { version = "0.28.1" }
+uniffi = { version = "0.25.0" }
 
 [build-dependencies]
-uniffi = { version = "0.28.1", features = [ "build" ] }
+uniffi = { version = "0.25.0", features = [ "build" ] }
