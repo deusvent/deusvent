@@ -12,7 +12,9 @@ public class deusvent : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"SQLiteCore",
+			"SQLiteSupport",
 		});
 		PrivateDependencyModuleNames.AddRange(new[] { "CADKernel", "WebSockets" });
 
@@ -38,32 +40,6 @@ public class deusvent : ModuleRules
 		else
 		{
 			throw new System.Exception("Unsupported platform for liblogic: " + Target.Platform);
-		}
-
-		// We assume sqlite3 is available everywhere
-		// TODO Paths looks very specific to my machine, let's check if those are the same on CI once we have it
-		if (Target.Platform == UnrealTargetPlatform.IOS)
-		{
-			var SDKPath =
-				Path.Combine(
-					"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib/");
-			PublicAdditionalLibraries.Add(Path.Combine(SDKPath, "libsqlite3.tbd"));
-		}
-		else if (Target.Platform == UnrealTargetPlatform.Mac)
-		{
-			var SDKPath =
-				Path.Combine(
-					"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/");
-			PublicAdditionalLibraries.Add(Path.Combine(SDKPath, "libsqlite3.tbd"));
-		}
-		else if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Runtime/Database/SQLiteCore/Source/SQLiteCore/Public/sqlite"));
-			PublicAdditionalLibraries.Add("/usr/lib/x86_64-linux-gnu/libsqlite3.so");
-		}
-		else
-		{
-			throw new System.Exception("Unsupported platform for sqlite3: " + Target.Platform);
 		}
 
 		// Enable testing for non production builds

@@ -49,7 +49,6 @@ build() {
         -serverconfig=Development \
         -project=$PWD/deusvent.uproject \
         -noP4 \
-        -nodebuginfo \
         -allmaps \
         -cook \
         -build \
