@@ -9,5 +9,4 @@ The unique game designed to guide you toward your lifetime goals.
 - `logic` - Separate library for the core game logic written in Rust
 - `logic-binding-cpp` - C++ wrapper for the `logic`. Used by `client-unreal`
 - `logic-binding-wasm` - WASM wrapper for the `logic`. Will be used for the upcoming `client-web`
-- `story` - Scrivener project for the story: characters, world, quests, progression, etc.
 - `www` - Zola based static site for [www.deusvent.com](https://www.deusvent.com)
