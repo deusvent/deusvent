@@ -1,3 +1,5 @@
+//! Memory implementation of a Storage
+
 use std::{
     collections::{BTreeMap, HashMap},
     pin::Pin,
@@ -14,8 +16,8 @@ use crate::entities::UserId;
 
 use super::{Entity, Key, Storage, StorageErr};
 
-// Memory storage, used only for testing and development. In case of errors, it panics most of the time
-// to highlight mistakes early in the development process
+/// Memory storage, used only for testing and development. In case of errors, it panics most of the time
+/// to highlight mistakes early in the development process
 pub struct MemoryStorage {
     data: Mutex<BTreeMap<String, PutItemFluentBuilder>>,
     client: Client,

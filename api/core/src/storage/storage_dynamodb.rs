@@ -1,3 +1,5 @@
+//! DynamoDB based storage
+
 use std::{collections::HashMap, pin::Pin};
 
 use aws_config::BehaviorVersion;
@@ -14,9 +16,9 @@ use crate::entities::UserId;
 
 use super::{Entity, Key, Storage, StorageErr};
 
-// DynamoDB based storage:
-// pk - partition key which is account id
-// sk - compound sort key of a form [ENTITY_TYPE][ENTITY_ID]
+/// DynamoDB based storage:
+/// pk - partition key which is user id
+/// sk - compound sort key of a form [ENTITY_TYPE][ENTITY_ID]
 pub struct DynamoStorage {
     client: Client,
     table: &'static str,

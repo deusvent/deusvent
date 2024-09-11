@@ -1,3 +1,5 @@
+//! Entities
+
 use std::{collections::HashMap, str::FromStr};
 
 use aws_sdk_dynamodb::{
@@ -8,17 +10,17 @@ use ulid::Ulid;
 
 use crate::storage::{Entity, Key, StorageErr};
 
-// User identifier, randomly generated ULID
+/// User identifier, randomly generated ULID
 #[derive(Debug, PartialEq, Clone)]
 pub struct UserId(Ulid);
 
 impl UserId {
-    // Creates new randomly generated user identifier
+    /// Creates new randomly generated user identifier
     pub fn generate() -> Self {
         Self(ulid::Ulid::new())
     }
 
-    // Returns string representation of a user_id
+    /// Returns string representation of a user_id
     pub fn as_str(&self) -> String {
         self.0.to_string()
     }
@@ -34,10 +36,13 @@ impl FromStr for UserId {
     }
 }
 
-// Player account
+/// Player account
 #[derive(Debug, PartialEq)]
 pub struct Account {
+    // TODO Having public fields is handy during development, but should be removed once we know access patters that we need
+    /// Account key
     pub key: Key,
+    /// Timestamp when account was created
     pub created_at: i64,
 }
 
@@ -61,7 +66,7 @@ impl Entity for Account {
 }
 
 impl Account {
-    // Generate new account with random user_id
+    /// Generate new account with random user_id
     pub fn generate() -> Self {
         let user_id = UserId::generate();
         // For account entity id is the same as a user id
