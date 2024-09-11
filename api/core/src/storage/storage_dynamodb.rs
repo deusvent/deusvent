@@ -10,12 +10,13 @@ use futures::Stream;
 
 use async_stream::stream;
 
-use crate::{
-    entities::UserId,
-    storage::{Entity, Key, Storage, StorageErr},
-};
+use crate::entities::UserId;
 
-// DynamoDB based storage
+use super::{Entity, Key, Storage, StorageErr};
+
+// DynamoDB based storage:
+// pk - partition key which is account id
+// sk - compound sort key of a form [ENTITY_TYPE][ENTITY_ID]
 pub struct DynamoStorage {
     client: Client,
     table: &'static str,

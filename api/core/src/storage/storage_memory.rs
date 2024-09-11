@@ -10,10 +10,9 @@ use aws_sdk_dynamodb::{
 };
 use futures::{stream, Stream};
 
-use crate::{
-    entities::UserId,
-    storage::{Entity, Key, Storage, StorageErr},
-};
+use crate::entities::UserId;
+
+use super::{Entity, Key, Storage, StorageErr};
 
 // Memory storage, used only for testing and development. In case of errors, it panics most of the time
 // to highlight mistakes early in the development process

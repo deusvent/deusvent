@@ -2,5 +2,3 @@
 
 pub mod entities;
 pub mod storage;
-pub mod storage_dynamodb;
-pub mod storage_memory;

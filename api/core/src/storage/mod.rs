@@ -1,3 +1,6 @@
+pub mod storage_dynamodb;
+pub mod storage_memory;
+
 use std::{collections::HashMap, pin::Pin};
 
 use aws_sdk_dynamodb::{
@@ -101,8 +104,7 @@ mod tests {
 
     use crate::{
         entities::{Account, UserId},
-        storage_dynamodb::DynamoStorage,
-        storage_memory::MemoryStorage,
+        storage::{storage_dynamodb::DynamoStorage, storage_memory::MemoryStorage},
     };
 
     use super::*;
