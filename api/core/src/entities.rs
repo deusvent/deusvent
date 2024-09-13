@@ -5,7 +5,7 @@ use std::{collections::HashMap, str::FromStr};
 use aws_sdk_dynamodb::{
     operation::put_item::builders::PutItemFluentBuilder, types::AttributeValue,
 };
-use logic::time::ServerTimestamp;
+use logic::datetime::ServerTimestamp;
 use ulid::Ulid;
 
 use crate::storage::{Entity, Key, StorageErr};

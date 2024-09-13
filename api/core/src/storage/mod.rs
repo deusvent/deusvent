@@ -108,7 +108,7 @@ pub trait Storage {
 mod tests {
     use futures::StreamExt;
     use lazy_static::lazy_static;
-    use logic::time::ServerTimestamp;
+    use logic::datetime::ServerTimestamp;
 
     use crate::{
         entities::{Account, UserId},

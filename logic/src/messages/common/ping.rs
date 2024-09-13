@@ -3,7 +3,7 @@
 use messages_macro::message;
 use serde::{Deserialize, Serialize};
 
-use crate::time::ServerTimestamp;
+use crate::datetime::ServerTimestamp;
 
 /// Current server status
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

@@ -2,8 +2,8 @@
 //! Intended to be called every N seconds by all the clients to sync time and ensure connection stays open
 
 use api_core::common::health::healthy_status;
+use api_core::datetime::ServerTimestamp;
 use api_core::messages::Message;
-use api_core::time::ServerTimestamp;
 use lambda_http::{run, service_fn, Error, Request, Response};
 
 fn data(now: ServerTimestamp) -> String {

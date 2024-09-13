@@ -1,8 +1,8 @@
 //! Health handler
 
 use logic::{
+    datetime::ServerTimestamp,
     messages::common::ping::{ServerStatus, Status},
-    time::ServerTimestamp,
 };
 
 /// Returns a message when server is health and operational
