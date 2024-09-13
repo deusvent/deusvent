@@ -1,3 +1,8 @@
+//! Data storage - defines main "Storage" trait and DynamoDB/Memory implementation
+
+pub mod storage_dynamodb;
+pub mod storage_memory;
+
 use std::{collections::HashMap, pin::Pin};
 
 use aws_sdk_dynamodb::{
@@ -7,57 +12,63 @@ use futures::Stream;
 
 use crate::entities::UserId;
 
-// Storage error types
+/// Storage error types
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum StorageErr {
+    /// Data is invalid and cannot be written or read
     ValidationError(String),
+    /// Request failed e.g. network error
     IOError(String),
+    /// Requested entity not found
     NotFound,
 }
 
-// Base user entity where partition key is user id
+/// Base user entity where partition key is user id
 pub trait Entity {
-    // Return entity type name which is used as a static prefix for the sort key
+    /// Return entity type name which is used as a static prefix for the sort key
     fn entity_type() -> &'static str;
 
-    // Return entity key
+    /// Return entity key
     fn key(&self) -> &Key;
 
-    // Serialize entity data to the writer for storing it in the database
+    /// Serialize entity data to the writer for storing it in the database
     fn serialize(&self, writer: PutItemFluentBuilder) -> PutItemFluentBuilder;
 
-    // Deserialize an entity from the data read from the database
+    /// Deserialize an entity from the data read from the database
     fn deserialize(key: Key, data: HashMap<String, AttributeValue>) -> Result<Self, StorageErr>
     where
         Self: Sized;
 }
 
-// Entity key - user_id as partition key and entity_id as a sort key
+/// Entity key - user_id as partition key and entity_id as a sort key
 #[derive(Debug, PartialEq, Clone)]
 pub struct Key {
+    // TODO Remove public fields from here as well
+    /// User identifier
     pub user_id: UserId,
+    /// Entity identifier
     pub entity_id: String,
 }
 
-// Base trait for the storage provider
+/// Base trait for the storage provider
 pub trait Storage {
-    // Creates a new Storage for the given table name
+    /// Creates a new Storage for the given table name
     async fn new(table: &'static str) -> Self;
 
-    // Store user entity in the database
+    /// Store user entity in the database
     async fn write<T: Entity>(&self, entity: &T) -> Result<(), StorageErr>;
 
-    // Read user entity from the database
+    /// Read user entity from the database
     async fn read<T>(&self, key: Key) -> Result<T, StorageErr>
     where
         T: Entity;
 
-    // Find all the entities for the given partition key and entity type, output is streamed
+    /// Find all the entities for the given partition key and entity type, output is streamed
     async fn find<T>(&self, user_id: &UserId) -> Pin<Box<dyn Stream<Item = Result<T, StorageErr>>>>
     where
         T: Entity + 'static;
 
-    // Delete entities in the give partition with optional entity type and sort key
+    /// Delete entities in the give partition with optional entity type and sort key
     async fn delete(
         &self,
         user_id: &UserId,
@@ -65,12 +76,12 @@ pub trait Storage {
         entity_id: Option<&str>,
     ) -> Result<usize, StorageErr>;
 
-    // Delete all the entries for the giver user id
+    /// Delete all the entries for the giver user id
     async fn delete_user_data(&self, user_id: &UserId) -> Result<usize, StorageErr> {
         self.delete(user_id, None, None).await
     }
 
-    // Delete all the entries of the given type for the given user
+    /// Delete all the entries of the given type for the given user
     async fn delete_entities(
         &self,
         user_id: &UserId,
@@ -79,7 +90,7 @@ pub trait Storage {
         self.delete(user_id, Some(entity_type), None).await
     }
 
-    // Delete an entity
+    /// Delete an entity
     async fn delete_entity<T>(&self, entity: T) -> Result<usize, StorageErr>
     where
         T: Entity,
@@ -101,8 +112,7 @@ mod tests {
 
     use crate::{
         entities::{Account, UserId},
-        storage_dynamodb::DynamoStorage,
-        storage_memory::MemoryStorage,
+        storage::{storage_dynamodb::DynamoStorage, storage_memory::MemoryStorage},
     };
 
     use super::*;
