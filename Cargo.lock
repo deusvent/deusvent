@@ -43,7 +43,6 @@ dependencies = [
  "lazy_static",
  "logic",
  "rand",
- "time",
  "tokio",
  "ulid",
 ]
@@ -1087,9 +1086,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "lambda-health"
+name = "lambda-common-ping"
 version = "0.1.0"
 dependencies = [
+ "api-core",
  "lambda_http",
  "tokio",
 ]
@@ -1324,6 +1324,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -1863,7 +1872,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
 dependencies = [
  "deranged",
+ "libc",
  "num-conv",
+ "num_threads",
  "powerfmt",
  "serde",
  "time-core",

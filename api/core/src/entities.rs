@@ -5,7 +5,7 @@ use std::{collections::HashMap, str::FromStr};
 use aws_sdk_dynamodb::{
     operation::put_item::builders::PutItemFluentBuilder, types::AttributeValue,
 };
-use time::OffsetDateTime;
+use logic::time::ServerTimestamp;
 use ulid::Ulid;
 
 use crate::storage::{Entity, Key, StorageErr};
@@ -43,7 +43,7 @@ pub struct Account {
     /// Account key
     pub key: Key,
     /// Timestamp when account was created
-    pub created_at: i64,
+    pub created_at: ServerTimestamp,
 }
 
 impl Entity for Account {
@@ -56,7 +56,7 @@ impl Entity for Account {
     }
 
     fn serialize(&self, writer: PutItemFluentBuilder) -> PutItemFluentBuilder {
-        writer.item("created_at", AttributeValue::N(self.created_at.to_string()))
+        writer.item("created_at", AttributeValue::N(self.created_at.as_string()))
     }
 
     fn deserialize(key: Key, data: HashMap<String, AttributeValue>) -> Result<Self, StorageErr> {
@@ -72,7 +72,7 @@ impl Account {
         // For account entity id is the same as a user id
         let entity_id = user_id.as_str().to_string();
         Self {
-            created_at: OffsetDateTime::now_utc().unix_timestamp(),
+            created_at: ServerTimestamp::now(),
             key: Key { user_id, entity_id },
         }
     }

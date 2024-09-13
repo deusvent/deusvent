@@ -8,7 +8,7 @@ use syn::{parse_macro_input, Data, DeriveInput, LitStr};
 // struct which automatically implement `Message` trait
 #[proc_macro_attribute]
 pub fn message(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let action_name = parse_macro_input!(attr as LitStr);
+    let message_type = parse_macro_input!(attr as LitStr);
     let input = parse_macro_input!(item as DeriveInput);
     let struct_name = &input.ident;
     let fields = match &input.data {
@@ -30,8 +30,8 @@ pub fn message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #input
 
         impl crate::messages::Message for #struct_name {
-            fn action_type() -> &'static str {
-                #action_name
+            fn message_type() -> &'static str {
+                #message_type
             }
 
             fn serialize(&self) -> Result<Vec<u8>, crate::messages::SerializationError> {
@@ -39,6 +39,7 @@ pub fn message(attr: TokenStream, item: TokenStream) -> TokenStream {
                 let mut data = Vec::new();
                 let mut serializer = serde_json::Serializer::new(&mut data);
                 let mut state = serializer.serialize_struct(stringify!(#struct_name), #fields_len)?;
+                state.serialize_field("type", #message_type)?;
                 #(#serialize_fields)*
                 state.end()?;
                 Ok(data)

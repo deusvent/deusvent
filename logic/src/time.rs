@@ -1,12 +1,20 @@
 //! Time related structs and functionality
 
+use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
 
-/// Unix timestamp with second precision
+/// Unix timestamp with second precision, supports time until 2106 year
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Timestamp(u32);
 
 impl Timestamp {
+    /// Returns current timestamp, UTC
+    pub fn now() -> Self {
+        let now = time::OffsetDateTime::now_utc();
+        Self(now.unix_timestamp() as u32)
+    }
+
     /// Creates a new timestamp with given amount of seconds
     pub fn new(seconds: u32) -> Self {
         Self(seconds)
@@ -16,6 +24,51 @@ impl Timestamp {
     pub fn diff(&self, other: &Timestamp) -> Duration {
         let diff = self.0.abs_diff(other.0);
         Duration(diff)
+    }
+
+    /// Returns timestamp number value as string
+    pub fn as_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
+impl FromStr for Timestamp {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let value: u32 = s.parse()?;
+        Ok(Timestamp(value))
+    }
+}
+
+/// Wrapper type for timestamp that was created on a server, meaning it could be trusted
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct ServerTimestamp(Timestamp);
+
+impl ServerTimestamp {
+    #[cfg(feature = "server")]
+    /// Creates a new server timestamp for current time, available only in server context
+    pub fn now() -> Self {
+        Self(Timestamp::now())
+    }
+
+    /// Creates a new server timestamp with given amount of seconds
+    pub fn new(seconds: u32) -> Self {
+        Self(Timestamp::new(seconds))
+    }
+
+    /// Returns server timestamp number value as string
+    pub fn as_string(&self) -> String {
+        self.0.as_string()
+    }
+}
+
+impl FromStr for ServerTimestamp {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let timestamp: Timestamp = s.parse()?;
+        Ok(ServerTimestamp(timestamp))
     }
 }
 
@@ -93,5 +146,12 @@ mod tests {
         // Order doesn't matter
         assert_eq!(t1.diff(&t2), Duration::new(u32::MAX));
         assert_eq!(t2.diff(&t1), Duration::new(u32::MAX));
+    }
+
+    #[test]
+    fn test_now() {
+        // Just a compilation test to ensure getting current time works on a target platform
+        let now = Timestamp::now();
+        assert!(now.0 > 0);
     }
 }

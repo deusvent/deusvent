@@ -20,14 +20,9 @@ module "domain" {
   api-destination-hosted_zone_id = module.api.api_gateway_zone_id
 }
 
-module "secrets" {
-  source = "./secrets"
-}
-
 module "api" {
   source          = "./api"
   certificate-arn = module.domain.certificate_arn
-  jwt_auth_secret = module.secrets.jwt_auth_secret
 }
 
 module "storage" {
