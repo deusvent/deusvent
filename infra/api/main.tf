@@ -1,7 +1,7 @@
 resource "aws_apigatewayv2_api" "api" {
   name                       = "api"
   protocol_type              = "WEBSOCKET"
-  route_selection_expression = "$request.body.action"
+  route_selection_expression = "$request.body.type"
 }
 
 resource "aws_apigatewayv2_stage" "v1" {
@@ -49,10 +49,9 @@ locals {
   // - iam_policies: Array of IAM policies to be attached to the lambda
   // - env_variables: Map of environment variables for the lambda
   lambdas = [
-    { name = "health", route = "health" },
+    { name = "common-ping", route = "common.ping" },
     { name = "ws-connect", route = "$connect" },
     { name = "ws-disconnect", route = "$disconnect" },
-    { name = "auth-register", route = "auth.register", env_variables = { JWT_SECRET = var.jwt_auth_secret } },
   ]
 }
 

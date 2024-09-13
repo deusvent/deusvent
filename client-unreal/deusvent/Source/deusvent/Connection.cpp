@@ -64,5 +64,5 @@ void UConnection::SendHealth() const {
         UE_LOGFMT(LogConnection, Error, "Cannot send health message");
         return;
     }
-    Connection->Send(TEXT("{\"action\":\"health\"}"));
+    Connection->Send(TEXT("{\"type\":\"common.ping\"}"));
 }

@@ -170,9 +170,9 @@ case "$ACTION" in
   "deps") deps ;;
   "lint") lint ;;
   "ci") 
-    build
+    build ""
     lint 
-    test 
+    test ""
     ;;
   *) usage ;;
 esac

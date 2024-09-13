@@ -1,8 +1,9 @@
 [package]
-name = "lambda-health"
+name = "lambda-common-ping"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 lambda_http = { version = "0.13.0", default-features=false, features=["apigw_websockets"]}
 tokio = "1.40.0"
+api-core = { path = "../core" }
