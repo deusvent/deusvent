@@ -32,11 +32,11 @@ mod tests {
 
     #[test]
     fn response() {
-        let now = ServerTimestamp::new(1726219252);
+        let now = ServerTimestamp::from_milliseconds(1726219252123);
         let response = data(now);
         assert_eq!(
             response,
-            r#"{"type":"common.serverStatus","timestamp":1726219252,"status":"OK"}"#
+            r#"{"type":"common.serverStatus","timestamp":1726219252123,"status":"OK"}"#
         );
     }
 }
