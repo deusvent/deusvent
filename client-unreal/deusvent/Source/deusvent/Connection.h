@@ -15,15 +15,15 @@ class DEUSVENT_API UConnection : public UObject {
     void Initialize(const char *ServerAddress);
     void Connect();
     void Disconnect();
-    void SendHealth() const;
+    void SendPing() const;
 
-    DECLARE_EVENT(UConnection, FPongEvent)
-    FPongEvent &OnPong() {
-        return PongEvent;
+    DECLARE_EVENT_OneParam(UConnection, FCommonServerInfo, FString /* message::common.ServerInfo */)
+        FCommonServerInfo &OnCommonServerInfo() {
+        return CommonServerInfo;
     }
 
   private:
-    FPongEvent PongEvent;
+    FCommonServerInfo CommonServerInfo;
     const char *Address;
     TSharedPtr<IWebSocket> Connection;
 };

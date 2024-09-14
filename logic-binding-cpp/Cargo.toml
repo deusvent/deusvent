@@ -9,6 +9,7 @@ name = "logic"
 
 [dependencies]
 uniffi = { version = "0.25.0" }
+logic = { path = "../logic" }
 
 [build-dependencies]
 uniffi = { version = "0.25.0", features = [ "build" ] }

@@ -273,11 +273,11 @@ impl SyncedTimestamp {
     /// Adjusts the time offset using server time and round-trip time.
     pub fn adjust(
         &mut self,
-        server_time: ServerTimestamp,
-        sent_at: Timestamp,
-        received_at: Timestamp,
+        server_time: &ServerTimestamp,
+        sent_at: &Timestamp,
+        received_at: &Timestamp,
     ) {
-        let rtt = received_at.diff(&sent_at);
+        let rtt = received_at.diff(sent_at);
         if rtt.0 > SyncedTimestamp::MAX_RTT_MS {
             // rtt is loo long and likely adjustment cannot be reliably calculated
             return;
@@ -417,34 +417,34 @@ mod tests {
 
         // Perfect sync
         ts.adjust(
-            ServerTimestamp(Timestamp(1_500)),
-            Timestamp(0),
-            Timestamp(3_000),
+            &ServerTimestamp(Timestamp(1_500)),
+            &Timestamp(0),
+            &Timestamp(3_000),
         );
         assert_eq!(ts.offset_ms, 0);
 
         // Server is ahead
         ts.adjust(
-            ServerTimestamp(Timestamp(2_000)),
-            Timestamp(0),
-            Timestamp(3_000),
+            &ServerTimestamp(Timestamp(2_000)),
+            &Timestamp(0),
+            &Timestamp(3_000),
         );
         assert_eq!(ts.offset_ms, 500);
 
         // Client is ahead
         ts.adjust(
-            ServerTimestamp(Timestamp(1_000)),
-            Timestamp(2_000),
-            Timestamp(3_000),
+            &ServerTimestamp(Timestamp(1_000)),
+            &Timestamp(2_000),
+            &Timestamp(3_000),
         );
         assert_eq!(ts.offset_ms, -1_500);
 
         // Long RTT adjustment are ignored
         let mut ts = SyncedTimestamp::new();
         ts.adjust(
-            ServerTimestamp(Timestamp(4_000)),
-            Timestamp(0),
-            Timestamp(SyncedTimestamp::MAX_RTT_MS + 1),
+            &ServerTimestamp(Timestamp(4_000)),
+            &Timestamp(0),
+            &Timestamp(SyncedTimestamp::MAX_RTT_MS + 1),
         );
         assert_eq!(ts.offset_ms, 0);
     }
