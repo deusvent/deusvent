@@ -37,8 +37,9 @@ void UConnection::Connect() {
                   Reason);
     });
 
-    Connection->OnMessage().AddLambda([](const FString &Message) {
+    Connection->OnMessage().AddLambda([this](const FString &Message) {
         UE_LOGFMT(LogConnection, Display, "Message received: {0}", Message);
+        this->OnCommonServerInfo().Broadcast(Message);
     });
 
     Connection->OnMessageSent().AddLambda([](const FString &Message) {
@@ -58,7 +59,7 @@ void UConnection::Disconnect() {
     UE_LOGFMT(LogConnection, Display, "Disconnected");
 }
 
-void UConnection::SendHealth() const {
+void UConnection::SendPing() const {
     if (!Connection.IsValid()) {
         // TODO Implement proper re-connecting and queueing of messages
         UE_LOGFMT(LogConnection, Error, "Cannot send health message");

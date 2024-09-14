@@ -1,6 +1,7 @@
 #include "Hero.h"
 #include "Kismet/GameplayStatics.h"
 #include "MainPlatformGameInstance.h"
+#include "Logging/StructuredLog.h"
 #include "logic/logic.hpp"
 
 AHero::AHero() {
@@ -10,21 +11,13 @@ AHero::AHero() {
 void AHero::BeginPlay() {
     Super::BeginPlay();
     // Testing of Rust integration
-    const auto Result = logic::add(11, 13);
-    UE_LOG(LogTemp, Display, TEXT("Result=%u"), Result);
+    const auto TimestampSending = logic::Timestamp::now();
 
     // Testing of WebSocket connection
     const auto GameInstance =
         Cast<UMainPlatformGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-    GameInstance->Connection->OnPong().AddUObject(this, &AHero::OnPong);
-    GameInstance->Connection->OnPong().AddUObject(this, &AHero::OnPong2);
-    GameInstance->Connection->SendHealth();
-}
+    GameInstance->Connection->OnCommonServerInfo().AddLambda(
+        [](FString Message) { UE_LOGFMT(LogTemp, Display, "OnServerInfo: {0}", Message); });
 
-void AHero::OnPong() {
-    UE_LOG(LogTemp, Display, TEXT("AHero::OnPong"));
-}
-
-void AHero::OnPong2() {
-    UE_LOG(LogTemp, Display, TEXT("AHero::OnPong2"));
+    GameInstance->Connection->SendPing();
 }

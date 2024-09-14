@@ -16,7 +16,19 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI contract version mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_func_add() != 27736) {
+    if (uniffi_logic_checksum_method_syncedtimestamp_adjust() != 25234) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_syncedtimestamp_now() != 26588) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_syncedtimestamp_new() != 16689) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_timestamp_now() != 21649) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -97,28 +109,6 @@ void rustbuffer_free(RustBuffer buf) {
     check_rust_call(status, nullptr);
 }
 
-uint32_t FfiConverterUInt32::lift(uint32_t val) {
-    return val;
-}
-
-uint32_t FfiConverterUInt32::lower(uint32_t val) {
-    return val;
-}
-
-uint32_t FfiConverterUInt32::read(RustStream &stream) {
-    uint32_t ret;
-    stream >> ret;
-
-    return ret;
-}
-
-void FfiConverterUInt32::write(RustStream &stream, uint32_t val) {
-    stream << val;
-}
-
-int32_t FfiConverterUInt32::allocation_size(uint32_t) {
-    return static_cast<int32_t>(sizeof(uint32_t));
-}
 std::string FfiConverterString::lift(RustBuffer buf) {
     auto string = std::string(reinterpret_cast<char *>(buf.data), buf.len);
 
@@ -156,14 +146,124 @@ int32_t FfiConverterString::allocation_size(const std::string &val) {
 }
 } // namespace uniffi
 
-namespace uniffi {}
-
-uint32_t add(uint32_t a, uint32_t b) {
-    auto ret = uniffi::rust_call(uniffi_logic_fn_func_add,
-                                 nullptr,
-                                 uniffi::FfiConverterUInt32::lower(a),
-                                 uniffi::FfiConverterUInt32::lower(b));
-
-    return uniffi::FfiConverterUInt32::lift(ret);
+ServerTimestamp::ServerTimestamp(void *ptr) : instance(ptr) {
 }
+
+ServerTimestamp::~ServerTimestamp() {
+    uniffi::rust_call(uniffi_logic_fn_free_servertimestamp, nullptr, this->instance);
+}
+
+SyncedTimestamp::SyncedTimestamp(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<SyncedTimestamp> SyncedTimestamp::init() {
+    return std::shared_ptr<SyncedTimestamp>(new SyncedTimestamp(
+        uniffi::rust_call(uniffi_logic_fn_constructor_syncedtimestamp_new, nullptr)));
+}
+
+void SyncedTimestamp::adjust(const std::shared_ptr<ServerTimestamp> &server_time,
+                             const std::shared_ptr<Timestamp> &sent_at,
+                             const std::shared_ptr<Timestamp> &received_at) {
+    uniffi::rust_call(uniffi_logic_fn_method_syncedtimestamp_adjust,
+                      nullptr,
+                      this->instance,
+                      uniffi::FfiConverterServerTimestamp::lower(server_time),
+                      uniffi::FfiConverterTimestamp::lower(sent_at),
+                      uniffi::FfiConverterTimestamp::lower(received_at));
+}
+std::shared_ptr<Timestamp> SyncedTimestamp::now() {
+    return uniffi::FfiConverterTimestamp::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_syncedtimestamp_now, nullptr, this->instance));
+}
+
+SyncedTimestamp::~SyncedTimestamp() {
+    uniffi::rust_call(uniffi_logic_fn_free_syncedtimestamp, nullptr, this->instance);
+}
+
+Timestamp::Timestamp(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<Timestamp> Timestamp::now() {
+    return std::shared_ptr<Timestamp>(
+        new Timestamp(uniffi::rust_call(uniffi_logic_fn_constructor_timestamp_now, nullptr)));
+}
+
+Timestamp::~Timestamp() {
+    uniffi::rust_call(uniffi_logic_fn_free_timestamp, nullptr, this->instance);
+}
+
+namespace uniffi {
+
+std::shared_ptr<ServerTimestamp> FfiConverterServerTimestamp::lift(void *ptr) {
+    return std::shared_ptr<ServerTimestamp>(new ServerTimestamp(ptr));
+}
+
+void *FfiConverterServerTimestamp::lower(const std::shared_ptr<ServerTimestamp> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<ServerTimestamp> FfiConverterServerTimestamp::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<ServerTimestamp>(new ServerTimestamp(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterServerTimestamp::write(RustStream &stream,
+                                        const std::shared_ptr<ServerTimestamp> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterServerTimestamp::allocation_size(const std::shared_ptr<ServerTimestamp> &) {
+    return 8;
+}
+
+std::shared_ptr<SyncedTimestamp> FfiConverterSyncedTimestamp::lift(void *ptr) {
+    return std::shared_ptr<SyncedTimestamp>(new SyncedTimestamp(ptr));
+}
+
+void *FfiConverterSyncedTimestamp::lower(const std::shared_ptr<SyncedTimestamp> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<SyncedTimestamp> FfiConverterSyncedTimestamp::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<SyncedTimestamp>(new SyncedTimestamp(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterSyncedTimestamp::write(RustStream &stream,
+                                        const std::shared_ptr<SyncedTimestamp> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterSyncedTimestamp::allocation_size(const std::shared_ptr<SyncedTimestamp> &) {
+    return 8;
+}
+
+std::shared_ptr<Timestamp> FfiConverterTimestamp::lift(void *ptr) {
+    return std::shared_ptr<Timestamp>(new Timestamp(ptr));
+}
+
+void *FfiConverterTimestamp::lower(const std::shared_ptr<Timestamp> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<Timestamp> FfiConverterTimestamp::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<Timestamp>(new Timestamp(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterTimestamp::write(RustStream &stream, const std::shared_ptr<Timestamp> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterTimestamp::allocation_size(const std::shared_ptr<Timestamp> &) {
+    return 8;
+}
+
+} // namespace uniffi
 } // namespace logic

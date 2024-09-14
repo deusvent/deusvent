@@ -1,6 +1,6 @@
 //! Messages related to game Decay
 
-use crate::date::Date;
+use crate::datetime::Date;
 use messages_macro::message;
 
 /// Query for the Decay data

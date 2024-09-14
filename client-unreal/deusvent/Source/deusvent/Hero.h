@@ -12,8 +12,6 @@ class DEUSVENT_API AHero : public APawn {
 
   public:
     AHero();
-    void OnPong();
-    void OnPong2();
 
   protected:
     virtual void BeginPlay() override;

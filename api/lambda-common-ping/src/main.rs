@@ -2,8 +2,8 @@
 //! Intended to be called every N seconds by all the clients to sync time and ensure connection stays open
 
 use api_core::common::health::healthy_status;
+use api_core::datetime::ServerTimestamp;
 use api_core::messages::Message;
-use api_core::time::ServerTimestamp;
 use lambda_http::{run, service_fn, Error, Request, Response};
 
 fn data(now: ServerTimestamp) -> String {
@@ -32,11 +32,11 @@ mod tests {
 
     #[test]
     fn response() {
-        let now = ServerTimestamp::new(1726219252);
+        let now = ServerTimestamp::from_milliseconds(1726219252123);
         let response = data(now);
         assert_eq!(
             response,
-            r#"{"type":"common.serverStatus","timestamp":1726219252,"status":"OK"}"#
+            r#"{"type":"common.serverStatus","timestamp":1726219252123,"status":"OK"}"#
         );
     }
 }

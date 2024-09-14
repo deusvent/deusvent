@@ -1,16 +1,36 @@
 uniffi::include_scaffolding!("logic");
 
-pub fn add(left: u32, right: u32) -> u32 {
-    left + right
+use std::sync::Arc;
+use std::sync::Mutex;
+
+pub use logic::datetime::ServerTimestamp;
+pub use logic::datetime::Timestamp;
+
+// Wrap logic::datetime::SyncedTimestamp as we can't expose mutable functions
+#[derive(Default)]
+pub struct SyncedTimestamp {
+    timestamp: Arc<Mutex<logic::datetime::SyncedTimestamp>>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl SyncedTimestamp {
+    pub fn new() -> Self {
+        Self {
+            timestamp: Arc::new(Mutex::new(logic::datetime::SyncedTimestamp::new())),
+        }
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn adjust(
+        &self,
+        server_time: &ServerTimestamp,
+        sent_at: &Timestamp,
+        received_at: &Timestamp,
+    ) {
+        let mut timestamp = self.timestamp.lock().expect("Cannot lock synced timestamp");
+        timestamp.adjust(server_time, sent_at, received_at)
+    }
+
+    pub fn now(&self) -> Arc<Timestamp> {
+        let timestamp = self.timestamp.lock().expect("Cannot lock synced timestamp");
+        Arc::new(timestamp.now())
     }
 }

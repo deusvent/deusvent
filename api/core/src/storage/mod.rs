@@ -108,7 +108,7 @@ pub trait Storage {
 mod tests {
     use futures::StreamExt;
     use lazy_static::lazy_static;
-    use logic::time::ServerTimestamp;
+    use logic::datetime::ServerTimestamp;
 
     use crate::{
         entities::{Account, UserId},
@@ -123,7 +123,7 @@ mod tests {
     }
 
     const TABLE: &str = "game_data_test";
-    const TIME: u32 = 1726219252;
+    const TIME: u64 = 1726219252000;
 
     fn random_account(user: &UserId) -> Account {
         Account {
@@ -131,7 +131,7 @@ mod tests {
                 user_id: user.clone(),
                 entity_id: Account::entity_type().to_string(),
             },
-            created_at: ServerTimestamp::new(TIME),
+            created_at: ServerTimestamp::from_milliseconds(TIME),
         }
     }
 
@@ -141,7 +141,7 @@ mod tests {
         storage.write(&acc_orig).await.unwrap();
         let mut acc_read = storage.read(acc_orig.key.clone()).await.unwrap();
         assert_eq!(acc_orig, acc_read);
-        acc_read.created_at = ServerTimestamp::new(TIME + 1);
+        acc_read.created_at = ServerTimestamp::from_milliseconds(TIME + 1);
         storage.write(&acc_read).await.unwrap();
         let acc_modified = storage.read(acc_read.key.clone()).await.unwrap();
         assert_ne!(acc_orig, acc_modified);
