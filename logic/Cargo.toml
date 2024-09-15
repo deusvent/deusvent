@@ -4,12 +4,11 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
+base64 = "0.22.1"
+bincode = "=2.0.0-rc.3"
 messages-macro = { path = "messages-macro" }
 time = { version = "0.3.36", features = ["local-offset" ] }
 uniffi = { version = "0.25.0" }
-
-[build-dependencies]
-uniffi = { version = "0.25.0", features = ["build"] }
 
 [features]
 server = [] # includes logic which could be callable only on server
