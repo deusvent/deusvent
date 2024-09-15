@@ -16,19 +16,55 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI contract version mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_syncedtimestamp_adjust() != 25234) {
+    if (uniffi_logic_checksum_method_duration_whole_days() != 58703) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_syncedtimestamp_now() != 26588) {
+    if (uniffi_logic_checksum_method_duration_whole_hours() != 60524) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_syncedtimestamp_new() != 16689) {
+    if (uniffi_logic_checksum_method_duration_whole_minutes() != 14664) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_timestamp_now() != 21649) {
+    if (uniffi_logic_checksum_method_servertimestamp_as_string() != 29463) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_syncedtimestamp_adjust() != 41584) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_syncedtimestamp_now() != 943) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_timestamp_as_string() != 3604) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_timestamp_diff() != 48627) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_duration_from_milliseconds() != 62484) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_servertimestamp_from_milliseconds() != 5946) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_syncedtimestamp_new() != 19626) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_timestamp_from_milliseconds() != 19208) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_timestamp_now() != 17293) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -109,6 +145,28 @@ void rustbuffer_free(RustBuffer buf) {
     check_rust_call(status, nullptr);
 }
 
+uint64_t FfiConverterUInt64::lift(uint64_t val) {
+    return val;
+}
+
+uint64_t FfiConverterUInt64::lower(uint64_t val) {
+    return val;
+}
+
+uint64_t FfiConverterUInt64::read(RustStream &stream) {
+    uint64_t ret;
+    stream >> ret;
+
+    return ret;
+}
+
+void FfiConverterUInt64::write(RustStream &stream, uint64_t val) {
+    stream << val;
+}
+
+int32_t FfiConverterUInt64::allocation_size(uint64_t) {
+    return static_cast<int32_t>(sizeof(uint64_t));
+}
 std::string FfiConverterString::lift(RustBuffer buf) {
     auto string = std::string(reinterpret_cast<char *>(buf.data), buf.len);
 
@@ -146,7 +204,46 @@ int32_t FfiConverterString::allocation_size(const std::string &val) {
 }
 } // namespace uniffi
 
+Duration::Duration(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<Duration> Duration::from_milliseconds(uint64_t milliseconds) {
+    return std::shared_ptr<Duration>(
+        new Duration(uniffi::rust_call(uniffi_logic_fn_constructor_duration_from_milliseconds,
+                                       nullptr,
+                                       uniffi::FfiConverterUInt64::lower(milliseconds))));
+}
+
+uint64_t Duration::whole_days() {
+    return uniffi::FfiConverterUInt64::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_duration_whole_days, nullptr, this->instance));
+}
+uint64_t Duration::whole_hours() {
+    return uniffi::FfiConverterUInt64::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_duration_whole_hours, nullptr, this->instance));
+}
+uint64_t Duration::whole_minutes() {
+    return uniffi::FfiConverterUInt64::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_duration_whole_minutes, nullptr, this->instance));
+}
+
+Duration::~Duration() {
+    uniffi::rust_call(uniffi_logic_fn_free_duration, nullptr, this->instance);
+}
+
 ServerTimestamp::ServerTimestamp(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<ServerTimestamp> ServerTimestamp::from_milliseconds(uint64_t milliseconds) {
+    return std::shared_ptr<ServerTimestamp>(new ServerTimestamp(
+        uniffi::rust_call(uniffi_logic_fn_constructor_servertimestamp_from_milliseconds,
+                          nullptr,
+                          uniffi::FfiConverterUInt64::lower(milliseconds))));
+}
+
+std::string ServerTimestamp::as_string() {
+    return uniffi::FfiConverterString::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_servertimestamp_as_string, nullptr, this->instance));
 }
 
 ServerTimestamp::~ServerTimestamp() {
@@ -183,9 +280,28 @@ SyncedTimestamp::~SyncedTimestamp() {
 Timestamp::Timestamp(void *ptr) : instance(ptr) {
 }
 
+std::shared_ptr<Timestamp> Timestamp::from_milliseconds(uint64_t milliseconds) {
+    return std::shared_ptr<Timestamp>(
+        new Timestamp(uniffi::rust_call(uniffi_logic_fn_constructor_timestamp_from_milliseconds,
+                                        nullptr,
+                                        uniffi::FfiConverterUInt64::lower(milliseconds))));
+}
+
 std::shared_ptr<Timestamp> Timestamp::now() {
     return std::shared_ptr<Timestamp>(
         new Timestamp(uniffi::rust_call(uniffi_logic_fn_constructor_timestamp_now, nullptr)));
+}
+
+std::string Timestamp::as_string() {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_timestamp_as_string, nullptr, this->instance));
+}
+std::shared_ptr<Duration> Timestamp::diff(const std::shared_ptr<Timestamp> &other) {
+    return uniffi::FfiConverterDuration::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_timestamp_diff,
+                          nullptr,
+                          this->instance,
+                          uniffi::FfiConverterTimestamp::lower(other)));
 }
 
 Timestamp::~Timestamp() {
@@ -193,6 +309,29 @@ Timestamp::~Timestamp() {
 }
 
 namespace uniffi {
+
+std::shared_ptr<Duration> FfiConverterDuration::lift(void *ptr) {
+    return std::shared_ptr<Duration>(new Duration(ptr));
+}
+
+void *FfiConverterDuration::lower(const std::shared_ptr<Duration> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<Duration> FfiConverterDuration::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<Duration>(new Duration(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterDuration::write(RustStream &stream, const std::shared_ptr<Duration> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterDuration::allocation_size(const std::shared_ptr<Duration> &) {
+    return 8;
+}
 
 std::shared_ptr<ServerTimestamp> FfiConverterServerTimestamp::lift(void *ptr) {
     return std::shared_ptr<ServerTimestamp>(new ServerTimestamp(ptr));

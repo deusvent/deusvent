@@ -3,6 +3,7 @@
 A core shared library used across all clients and servers. It contains shared structures and the core game logic.
 
 - Main limitation is that we are using `uniffi` for generate C++ bindings which doesn't allow methods that takes `&mut self`. Either use interior mutability or consider writing a wrapper which will be `Send+Sync`
+- Temporary limitation is that because we use `uniffi-bindgen-cpp` which supports only `uniffi` v0.25.0 currently we have to wrap all custom types with `Arc` in public interfaces, should be fixed in next version
 - We are targeting iOS, Android, Mac and Linux operating systems - ensure that all code and dependencies are compatible
 - We need to support the `amd64` and `arm64` architectures, as well as WebAssembly - check carefully your code and dependencies
 - Avoid using `usize` in public interfaces. While most targets are 64-bit, the WASM environment is still 32-bit. We will use binary encoding for data transfer/persistence and using `usize` can lead to hard-to-detect issues

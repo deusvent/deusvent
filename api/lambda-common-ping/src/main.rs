@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn response() {
-        let now = ServerTimestamp::from_milliseconds(1726219252123);
+        let now = ServerTimestamp::from_milliseconds_pure(1726219252123);
         let response = data(now);
         assert_eq!(
             response,

@@ -17,9 +17,37 @@
 #include "logic_scaffolding.hpp"
 
 namespace logic {
+struct Duration;
 struct ServerTimestamp;
 struct SyncedTimestamp;
 struct Timestamp;
+
+namespace uniffi {
+    struct FfiConverterDuration;
+} // namespace uniffi
+
+struct Duration {
+    friend uniffi::FfiConverterDuration;
+
+    Duration() = delete;
+
+    Duration(const Duration &) = delete;
+    Duration(Duration &&) = delete;
+
+    Duration &operator=(const Duration &) = delete;
+    Duration &operator=(Duration &&) = delete;
+
+    ~Duration();
+    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
+    uint64_t whole_days();
+    uint64_t whole_hours();
+    uint64_t whole_minutes();
+
+private:
+    Duration(void *);
+
+    void *instance;
+};
 
 namespace uniffi {
     struct FfiConverterServerTimestamp;
@@ -37,6 +65,8 @@ struct ServerTimestamp {
     ServerTimestamp &operator=(ServerTimestamp &&) = delete;
 
     ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
 
 private:
     ServerTimestamp(void *);
@@ -86,7 +116,10 @@ struct Timestamp {
     Timestamp &operator=(Timestamp &&) = delete;
 
     ~Timestamp();
+    static std::shared_ptr<Timestamp> from_milliseconds(uint64_t milliseconds);
     static std::shared_ptr<Timestamp> now();
+    std::string as_string();
+    std::shared_ptr<Duration> diff(const std::shared_ptr<Timestamp> &other);
 
 private:
     Timestamp(void *);
@@ -148,12 +181,28 @@ private:
 RustBuffer rustbuffer_alloc(int32_t);
 RustBuffer rustbuffer_from_bytes(const ForeignBytes &);
 void rustbuffer_free(RustBuffer);
+
+struct FfiConverterUInt64 {
+    static uint64_t lift(uint64_t);
+    static uint64_t lower(uint64_t);
+    static uint64_t read(RustStream &);
+    static void write(RustStream &, uint64_t);
+    static int32_t allocation_size(uint64_t);
+};
 struct FfiConverterString {
     static std::string lift(RustBuffer buf);
     static RustBuffer lower(const std::string &);
     static std::string read(RustStream &);
     static void write(RustStream &, const std::string &);
     static int32_t allocation_size(const std::string &);
+};
+
+struct FfiConverterDuration {
+    static std::shared_ptr<Duration> lift(void *);
+    static void *lower(const std::shared_ptr<Duration> &);
+    static std::shared_ptr<Duration> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<Duration> &);
+    static int32_t allocation_size(const std::shared_ptr<Duration> &);
 };
 
 struct FfiConverterServerTimestamp {

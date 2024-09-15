@@ -1,6 +1,5 @@
 //! Messages structs that are used for communication between client and server
 
-pub mod auth;
 pub mod common;
 pub mod game;
 
@@ -9,12 +8,6 @@ pub mod game;
 pub enum SerializationError {
     /// Bad data which cannot be deserialized
     BadData(String),
-}
-
-impl From<serde_json::Error> for SerializationError {
-    fn from(err: serde_json::Error) -> Self {
-        Self::BadData(err.to_string())
-    }
 }
 
 /// Base trait for all messages that are send between client and server

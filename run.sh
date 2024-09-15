@@ -75,8 +75,8 @@ EOF
       log "Building all Rust projects"
       cargo build --release --all-features
 
-      log "Building logic"
-      (cd logic-binding-cpp && ./gen.sh)
+      log "Building C++ binding"
+      (cd logic && ./generate_uniffi_binding.sh)
   fi
 }
 

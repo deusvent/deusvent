@@ -28,13 +28,23 @@ struct RustCallStatus {
 
 typedef int ForeignCallback(uint64_t handle, uint32_t method, uint8_t *args_data, int32_t args_len, RustBuffer *buf_ptr);
 
+void uniffi_logic_fn_free_duration(void * ptr, RustCallStatus *out_status);
+void * uniffi_logic_fn_constructor_duration_from_milliseconds(uint64_t milliseconds, RustCallStatus *out_status);
+uint64_t uniffi_logic_fn_method_duration_whole_days(void * ptr, RustCallStatus *out_status);
+uint64_t uniffi_logic_fn_method_duration_whole_hours(void * ptr, RustCallStatus *out_status);
+uint64_t uniffi_logic_fn_method_duration_whole_minutes(void * ptr, RustCallStatus *out_status);
 void uniffi_logic_fn_free_servertimestamp(void * ptr, RustCallStatus *out_status);
+void * uniffi_logic_fn_constructor_servertimestamp_from_milliseconds(uint64_t milliseconds, RustCallStatus *out_status);
+RustBuffer uniffi_logic_fn_method_servertimestamp_as_string(void * ptr, RustCallStatus *out_status);
 void uniffi_logic_fn_free_syncedtimestamp(void * ptr, RustCallStatus *out_status);
 void * uniffi_logic_fn_constructor_syncedtimestamp_new(RustCallStatus *out_status);
 void uniffi_logic_fn_method_syncedtimestamp_adjust(void * ptr, void * server_time, void * sent_at, void * received_at, RustCallStatus *out_status);
 void * uniffi_logic_fn_method_syncedtimestamp_now(void * ptr, RustCallStatus *out_status);
 void uniffi_logic_fn_free_timestamp(void * ptr, RustCallStatus *out_status);
+void * uniffi_logic_fn_constructor_timestamp_from_milliseconds(uint64_t milliseconds, RustCallStatus *out_status);
 void * uniffi_logic_fn_constructor_timestamp_now(RustCallStatus *out_status);
+RustBuffer uniffi_logic_fn_method_timestamp_as_string(void * ptr, RustCallStatus *out_status);
+void * uniffi_logic_fn_method_timestamp_diff(void * ptr, void * other, RustCallStatus *out_status);
 RustBuffer ffi_logic_rustbuffer_alloc(int32_t size, RustCallStatus *out_status);
 RustBuffer ffi_logic_rustbuffer_from_bytes(ForeignBytes bytes, RustCallStatus *out_status);
 void ffi_logic_rustbuffer_free(RustBuffer buf, RustCallStatus *out_status);
@@ -92,9 +102,18 @@ void ffi_logic_rust_future_poll_void(intptr_t handle, intptr_t uniffi_callback);
 void ffi_logic_rust_future_cancel_void(intptr_t handle);
 void ffi_logic_rust_future_free_void(intptr_t handle);
 void ffi_logic_rust_future_complete_void(intptr_t handle, RustCallStatus *out_status);
+uint16_t uniffi_logic_checksum_method_duration_whole_days();
+uint16_t uniffi_logic_checksum_method_duration_whole_hours();
+uint16_t uniffi_logic_checksum_method_duration_whole_minutes();
+uint16_t uniffi_logic_checksum_method_servertimestamp_as_string();
 uint16_t uniffi_logic_checksum_method_syncedtimestamp_adjust();
 uint16_t uniffi_logic_checksum_method_syncedtimestamp_now();
+uint16_t uniffi_logic_checksum_method_timestamp_as_string();
+uint16_t uniffi_logic_checksum_method_timestamp_diff();
+uint16_t uniffi_logic_checksum_constructor_duration_from_milliseconds();
+uint16_t uniffi_logic_checksum_constructor_servertimestamp_from_milliseconds();
 uint16_t uniffi_logic_checksum_constructor_syncedtimestamp_new();
+uint16_t uniffi_logic_checksum_constructor_timestamp_from_milliseconds();
 uint16_t uniffi_logic_checksum_constructor_timestamp_now();
 uint32_t ffi_logic_uniffi_contract_version();
 

@@ -131,7 +131,7 @@ mod tests {
                 user_id: user.clone(),
                 entity_id: Account::entity_type().to_string(),
             },
-            created_at: ServerTimestamp::from_milliseconds(TIME),
+            created_at: ServerTimestamp::from_milliseconds_pure(TIME),
         }
     }
 
@@ -141,7 +141,7 @@ mod tests {
         storage.write(&acc_orig).await.unwrap();
         let mut acc_read = storage.read(acc_orig.key.clone()).await.unwrap();
         assert_eq!(acc_orig, acc_read);
-        acc_read.created_at = ServerTimestamp::from_milliseconds(TIME + 1);
+        acc_read.created_at = ServerTimestamp::from_milliseconds_pure(TIME + 1);
         storage.write(&acc_read).await.unwrap();
         let acc_modified = storage.read(acc_read.key.clone()).await.unwrap();
         assert_ne!(acc_orig, acc_modified);

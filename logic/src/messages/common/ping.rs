@@ -1,12 +1,11 @@
 //! Clients periodically sends Ping messages while server replies with ServerStatus
 
 use messages_macro::message;
-use serde::{Deserialize, Serialize};
 
 use crate::datetime::ServerTimestamp;
 
 /// Current server status
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq)]
 pub enum Status {
     /// Everything is fine
     OK,
