@@ -5,6 +5,7 @@
 #include "Modules/ModuleManager.h"
 
 #include "Logging/StructuredLog.h"
+#include "logic/logic.hpp"
 
 DEFINE_LOG_CATEGORY(LogConnection);
 
@@ -38,7 +39,23 @@ void UConnection::Connect() {
     });
 
     Connection->OnMessage().AddLambda([this](const FString &Message) {
-        UE_LOGFMT(LogConnection, Display, "Message received: {0}", Message);
+        // Testing message tag and deserialization
+        auto Prefix = FString(logic::server_status_message_tag().c_str());
+        if (Message.StartsWith(Prefix)) {
+            auto Deserialized = logic::ServerStatusSerializer::deserialize(TCHAR_TO_UTF8(*Message));
+            auto ServerHealth = Deserialized->data();
+            UE_LOGFMT(LogConnection,
+                      Display,
+                      "Received ServerHealth: {0}",
+                      FString(Deserialized->debug_string().c_str()));
+        } else {
+            UE_LOGFMT(LogConnection,
+                      Display,
+                      "Unknown message tag received: {0}, wanted prefix: {1}",
+                      Message,
+                      Prefix);
+        }
+
         this->OnCommonServerInfo().Broadcast(Message);
     });
 
@@ -65,5 +82,11 @@ void UConnection::SendPing() const {
         UE_LOGFMT(LogConnection, Error, "Cannot send health message");
         return;
     }
-    Connection->Send(TEXT("{\"type\":\"common.ping\"}"));
+
+    // Testing sending message using new serializers
+    auto Data = logic::Ping{.ts = logic::Timestamp::now()};
+    auto Serializer = logic::PingSerializer::init(Data);
+    auto Msg = FString(Serializer->serialize().c_str());
+    UE_LOGFMT(LogConnection, Display, "Sending Ping Msg: {0}", Msg);
+    Connection->Send(Msg);
 }

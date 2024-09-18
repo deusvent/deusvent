@@ -471,6 +471,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base-x"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cbbc9d0964165b47557570cce6c952866c2678457aca742aafc9fb771d30270"
+
+[[package]]
 name = "base64"
 version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -499,6 +505,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "823388e228f614e9558c6804262db37960ec8821856535f5c3f59913140558f8"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "binary-encoding"
+version = "0.1.0"
+dependencies = [
+ "base-x",
+ "base64 0.22.1",
+ "serde_json",
 ]
 
 [[package]]
@@ -1227,9 +1242,11 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 name = "logic"
 version = "0.0.0"
 dependencies = [
- "base64 0.22.1",
+ "binary-encoding",
  "bincode 2.0.0-rc.3",
  "messages-macro",
+ "serde_json",
+ "thiserror",
  "time",
  "uniffi",
 ]
@@ -1253,9 +1270,10 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 name = "messages-macro"
 version = "0.0.0"
 dependencies = [
+ "binary-encoding",
+ "lazy_static",
  "proc-macro2",
  "quote",
- "serde_json",
  "syn",
 ]
 

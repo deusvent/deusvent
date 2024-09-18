@@ -105,7 +105,7 @@ impl FromStr for Date {
 }
 
 /// Unix timestamp with milliseconds precision
-#[derive(Debug, PartialEq, uniffi::Object)]
+#[derive(Debug, PartialEq, uniffi::Object, bincode::Decode, bincode::Encode)]
 pub struct Timestamp(u64);
 
 impl Timestamp {}
@@ -147,10 +147,10 @@ impl FromStr for Timestamp {
 }
 
 /// Wrapper type for timestamp that was created on a server, meaning it could be trusted
-#[derive(Debug, PartialEq, uniffi::Object)]
+#[derive(Debug, PartialEq, Clone, uniffi::Object, bincode::Encode, bincode::Decode)]
 pub struct ServerTimestamp(Arc<Timestamp>);
 
-#[cfg(feature = "server")]
+//#[cfg(feature = "server")]
 impl ServerTimestamp {
     /// Creates a new server timestamp for current time, available only in server context
     pub fn now() -> Self {
@@ -188,7 +188,7 @@ impl FromStr for ServerTimestamp {
 }
 
 /// Time duration with milliseconds precision, string representation is in [HH:MM::SS.SSS] format
-#[derive(Debug, PartialEq, uniffi::Object)]
+#[derive(Debug, PartialEq, uniffi::Object, bincode::Encode, bincode::Decode)]
 pub struct Duration(u64);
 
 impl Duration {}
@@ -274,7 +274,7 @@ fn check_format(s: &str, format: Vec<char>) -> Result<(), String> {
 
 /// Timestamp that adjusts to the server's time to synchronize client and server clocks
 /// For clients that support time synchronization to minimize time drift between client and server
-#[derive(Default, uniffi::Object)]
+#[derive(Default, uniffi::Object, bincode::Decode, bincode::Encode)]
 pub struct SyncedTimestamp {
     offset_ms: Mutex<i64>,
 }
@@ -471,5 +471,52 @@ mod tests {
             &Timestamp(SYNCED_TIMESTAMP_MAX_RTT_MS + 1),
         );
         assert_eq!(*ts.offset_ms.lock().unwrap(), 0);
+    }
+
+    #[test]
+    fn timestamp_encoding() {
+        // Simple test when struct is backed by u64
+        let val = 42;
+        let config = bincode::config::standard();
+        assert_eq!(
+            bincode::encode_to_vec(Timestamp(val), config).unwrap(),
+            vec![val as u8]
+        );
+        let ts: Timestamp = bincode::decode_from_slice(&[val as u8], config).unwrap().0;
+        assert_eq!(ts, Timestamp(val));
+    }
+
+    #[test]
+    fn server_timestamp_encoding() {
+        // Test when struct is backed by Arc of another struct
+        let val = 42;
+        let config = bincode::config::standard();
+        assert_eq!(
+            bincode::encode_to_vec(ServerTimestamp::from_milliseconds(val), config).unwrap(),
+            vec![val as u8]
+        );
+        let ts: ServerTimestamp = bincode::decode_from_slice(&[val as u8], config).unwrap().0;
+        assert_eq!(ts, *ServerTimestamp::from_milliseconds(val));
+    }
+
+    #[test]
+    fn synced_timestamp_encoding() {
+        // Simple test when struct is backed by u64
+        let config = bincode::config::standard();
+        let ts = SyncedTimestamp::new();
+        ts.adjust(
+            &ServerTimestamp(Arc::new(Timestamp(2_000))),
+            &Timestamp(0),
+            &Timestamp(3_000),
+        );
+        let val = *ts.offset_ms.lock().unwrap(); // 500ms
+        assert_eq!(
+            bincode::encode_to_vec(ts, config).unwrap(),
+            vec![251, 232, 3]
+        );
+        let got: SyncedTimestamp = bincode::decode_from_slice(&[251, 232, 3], config)
+            .unwrap()
+            .0;
+        assert_eq!(*got.offset_ms.lock().unwrap(), val);
     }
 }

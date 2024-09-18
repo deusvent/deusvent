@@ -3,15 +3,12 @@
 
 use api_core::common::health::healthy_status;
 use api_core::datetime::ServerTimestamp;
-use api_core::messages::Message;
 use lambda_http::{run, service_fn, Error, Request, Response};
 
 fn data(now: ServerTimestamp) -> String {
-    let health = healthy_status(now);
-    let data = health
+    healthy_status(now)
         .serialize()
-        .expect("Health data should be always serializable");
-    String::from_utf8(data).expect("Health data should be always a string")
+        .expect("Health data should be always serializable")
 }
 
 async fn handler(_: Request) -> Result<Response<String>, Error> {
@@ -28,15 +25,16 @@ async fn main() -> Result<(), Error> {
 
 #[cfg(test)]
 mod tests {
+    use api_core::messages::common::ping::ServerStatus;
+
     use super::*;
 
     #[test]
     fn response() {
         let now = ServerTimestamp::from_milliseconds_pure(1726219252123);
-        let response = data(now);
-        assert_eq!(
-            response,
-            r#"{"type":"common.serverStatus","timestamp":1726219252123,"status":"OK"}"#
-        );
+        let response = data(now.clone());
+        assert_eq!(response, "-.#QT;|ls+7m9J+");
+        let data = ServerStatus::deserialize(&response).unwrap();
+        assert_eq!(*data.timestamp, now);
     }
 }

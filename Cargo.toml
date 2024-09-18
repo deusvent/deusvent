@@ -7,4 +7,6 @@ members = [
     "api/lambda-ws-disconnect",
     "api/core",
     "logic",
+    "logic/binary-encoding",
+    "logic/messages-macro"
 ]
