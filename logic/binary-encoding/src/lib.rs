@@ -148,13 +148,6 @@ mod tests {
         ];
         for (id, want) in vals {
             let encoded = encode_message_tag(id);
-            println!(
-                "ID={}, encoded_tag='{}', encoded_data='{}'",
-                id,
-                encoded,
-                encode_base94(id.to_le_bytes().as_ref())
-            );
-
             let want = String::from_utf8(want).unwrap();
             assert_eq!(
                 encoded, want,

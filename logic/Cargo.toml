@@ -10,6 +10,9 @@ binary-encoding = { path = "binary-encoding" }
 bincode = "=2.0.0-rc.3"
 thiserror = "1.0.63"
 time = { version = "0.3.36", features = ["local-offset" ] }
+
+# HACK We should not include uniffi all the time, but we blocked by https://github.com/mozilla/uniffi-rs/pull/2113
+# It fixed in uniffi v0.28.0 while we stuck with 0.25.0 for now because of uniffi-bindgen-cpp
 uniffi = { version = "0.25.0" }
 
 [dev-dependencies]

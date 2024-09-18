@@ -58,42 +58,10 @@ private:
     void *instance;
 };
 
-namespace uniffi {
-    struct FfiConverterTimestamp;
-} // namespace uniffi
-
-struct Timestamp {
-    friend uniffi::FfiConverterTimestamp;
-
-    Timestamp() = delete;
-
-    Timestamp(const Timestamp &) = delete;
-    Timestamp(Timestamp &&) = delete;
-
-    Timestamp &operator=(const Timestamp &) = delete;
-    Timestamp &operator=(Timestamp &&) = delete;
-
-    ~Timestamp();
-    static std::shared_ptr<Timestamp> from_milliseconds(uint64_t milliseconds);
-    static std::shared_ptr<Timestamp> now();
-    std::string as_string();
-    std::shared_ptr<Duration> diff(const std::shared_ptr<Timestamp> &other);
-
-private:
-    Timestamp(void *);
-
-    void *instance;
-};
-
 
 struct ServerStatus {
     std::shared_ptr<ServerTimestamp> timestamp;
     Status status;
-};
-
-
-struct Ping {
-    std::shared_ptr<Timestamp> ts;
 };
 
 namespace uniffi {
@@ -203,6 +171,37 @@ private:
     SyncedTimestamp(void *);
 
     void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterTimestamp;
+} // namespace uniffi
+
+struct Timestamp {
+    friend uniffi::FfiConverterTimestamp;
+
+    Timestamp() = delete;
+
+    Timestamp(const Timestamp &) = delete;
+    Timestamp(Timestamp &&) = delete;
+
+    Timestamp &operator=(const Timestamp &) = delete;
+    Timestamp &operator=(Timestamp &&) = delete;
+
+    ~Timestamp();
+    static std::shared_ptr<Timestamp> from_milliseconds(uint64_t milliseconds);
+    static std::shared_ptr<Timestamp> now();
+    std::string as_string();
+    std::shared_ptr<Duration> diff(const std::shared_ptr<Timestamp> &other);
+
+private:
+    Timestamp(void *);
+
+    void *instance;
+};
+
+
+struct Ping {
 };
 
 namespace uniffi {

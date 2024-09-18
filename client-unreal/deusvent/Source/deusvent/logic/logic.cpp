@@ -593,16 +593,13 @@ RustBuffer FfiConverterTypePing::lower(const Ping &val) {
 }
 
 Ping FfiConverterTypePing::read(RustStream &stream) {
-    return {FfiConverterTimestamp::read(stream)};
+    return {};
 }
 
 void FfiConverterTypePing::write(RustStream &stream, const Ping &val) {
-    FfiConverterTimestamp::write(stream, val.ts);
 }
 
-int32_t FfiConverterTypePing::allocation_size(const Ping &val) {
-    return FfiConverterTimestamp::allocation_size(val.ts);
-}
+int32_t FfiConverterTypePing::allocation_size(const Ping &val){return }
 
 ServerStatus FfiConverterTypeServerStatus::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);

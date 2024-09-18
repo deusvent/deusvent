@@ -4,10 +4,7 @@ use std::sync::Arc;
 
 use messages_macro::{client_message, server_message};
 
-use crate::{
-    datetime::{ServerTimestamp, Timestamp},
-    messages::SerializationError,
-};
+use crate::{datetime::ServerTimestamp, messages::SerializationError};
 
 /// Current server status
 #[derive(Debug, Clone, PartialEq, bincode::Decode, bincode::Encode, uniffi::Enum)]
@@ -31,6 +28,4 @@ pub struct ServerStatus {
 
 /// Client ping message
 #[client_message(1)]
-pub struct Ping {
-    ts: Arc<Timestamp>,
-}
+pub struct Ping {}

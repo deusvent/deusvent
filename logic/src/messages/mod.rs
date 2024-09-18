@@ -12,17 +12,19 @@
 //!
 //! For client messages sent to the API, we need JSON with a routing key, so messages are in the form:
 //! {"k":"[MESSAGE_TAG]","v":"[SERIALIZED_DATA]"}, where `SERIALIZED_DATA` is bincode data encoded in Base94
-//! and [MESSAGE_TAG] is the u16 tag assigned to the message also encoded in Base94.
+//! and [MESSAGE_TAG] is the u16 tag assigned to the message also encoded in custom binary encoding.
 //!
-//! For server messages, they are base94-encoded strings in a form:
+//! For server messages, they are encoded strings in a form:
 //! - The first two string bytes represent the message tag
-//! - The remaining bytes are bincode-serialized data
+//! - The remaining bytes are Base94 bincode-serialized data
 //!
 //! Having prefix with message tag allows clients to efficiently determine which message it received via
 //! web socket and use correct deserialize logic.
+//!
+//! Encoding should be used only for message serialization for client/backend communication and should not
+//! be used in long term storages as bincode is not backward or forward compatible.
 
 pub mod common;
-// pub mod game;
 
 /// Errors that may happen during data serializations
 #[derive(Debug, uniffi::Error, thiserror::Error)]
