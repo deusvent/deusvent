@@ -84,7 +84,7 @@ void UConnection::SendPing() const {
     }
 
     // Testing sending message using new serializers
-    auto Data = logic::Ping{.ts = logic::Timestamp::now()};
+    auto Data = logic::Ping{};
     auto Serializer = logic::PingSerializer::init(Data);
     auto Msg = FString(Serializer->serialize().c_str());
     UE_LOGFMT(LogConnection, Display, "Sending Ping Msg: {0}", Msg);

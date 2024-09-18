@@ -212,6 +212,29 @@ void FfiConverterUInt64::write(RustStream &stream, uint64_t val) {
 int32_t FfiConverterUInt64::allocation_size(uint64_t) {
     return static_cast<int32_t>(sizeof(uint64_t));
 }
+
+bool FfiConverterBool::lift(uint8_t val) {
+    return !!val;
+}
+
+uint8_t FfiConverterBool::lower(bool val) {
+    return val;
+}
+
+bool FfiConverterBool::read(RustStream &stream) {
+    uint8_t val;
+    stream >> val;
+
+    return val;
+}
+
+void FfiConverterBool::write(RustStream &stream, bool val) {
+    stream << val;
+}
+
+int32_t FfiConverterBool::allocation_size(bool) {
+    return 1;
+}
 std::string FfiConverterString::lift(RustBuffer buf) {
     auto string = std::string(reinterpret_cast<char *>(buf.data), buf.len);
 
@@ -593,13 +616,16 @@ RustBuffer FfiConverterTypePing::lower(const Ping &val) {
 }
 
 Ping FfiConverterTypePing::read(RustStream &stream) {
-    return {};
+    return {FfiConverterBool::read(stream)};
 }
 
 void FfiConverterTypePing::write(RustStream &stream, const Ping &val) {
+    FfiConverterBool::write(stream, val.unused);
 }
 
-int32_t FfiConverterTypePing::allocation_size(const Ping &val){return }
+int32_t FfiConverterTypePing::allocation_size(const Ping &val) {
+    return FfiConverterBool::allocation_size(val.unused);
+}
 
 ServerStatus FfiConverterTypeServerStatus::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);

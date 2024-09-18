@@ -202,6 +202,7 @@ private:
 
 
 struct Ping {
+    bool unused;
 };
 
 namespace uniffi {
@@ -304,6 +305,14 @@ struct FfiConverterUInt64 {
     static uint64_t read(RustStream &);
     static void write(RustStream &, uint64_t);
     static int32_t allocation_size(uint64_t);
+};
+
+struct FfiConverterBool {
+    static bool lift(uint8_t);
+    static uint8_t lower(bool);
+    static bool read(RustStream &);
+    static void write(RustStream &, bool);
+    static int32_t allocation_size(bool);
 };
 struct FfiConverterString {
     static std::string lift(RustBuffer buf);
