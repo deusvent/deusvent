@@ -3,9 +3,8 @@
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,
+    sync::{Arc, Mutex},
 };
-
-use serde::{Deserialize, Serialize};
 
 /// Date, string format YYYY-MM-DD
 #[derive(Debug, PartialEq, Clone)]
@@ -73,7 +72,7 @@ impl Date {
     }
 
     /// Returns absolute duration difference between two dates
-    pub fn diff(&self, other: &Date) -> Duration {
+    pub fn diff(&self, other: &Date) -> Arc<Duration> {
         let diff = (self.0 - other.0).whole_seconds().unsigned_abs();
         Duration::from_milliseconds(diff * 1000)
     }
@@ -106,25 +105,30 @@ impl FromStr for Date {
 }
 
 /// Unix timestamp with milliseconds precision
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, uniffi::Object, bincode::Decode, bincode::Encode)]
 pub struct Timestamp(u64);
 
+impl Timestamp {}
+
+#[uniffi::export]
 impl Timestamp {
     /// Returns current timestamp, UTC
-    pub fn now() -> Self {
+    #[uniffi::constructor]
+    pub fn now() -> Arc<Self> {
         let now = time::OffsetDateTime::now_utc();
-        Self((now.unix_timestamp_nanos() / 1_000_000) as u64)
+        Arc::new(Self((now.unix_timestamp_nanos() / 1_000_000) as u64))
     }
 
     /// Creates a new timestamp with given amount of milliseconds
-    pub fn from_milliseconds(milliseconds: u64) -> Self {
-        Self(milliseconds)
+    #[uniffi::constructor]
+    pub fn from_milliseconds(milliseconds: u64) -> Arc<Self> {
+        Arc::new(Self(milliseconds))
     }
 
     /// Returns absolute duration from the second timestamp
-    pub fn diff(&self, other: &Timestamp) -> Duration {
+    pub fn diff(&self, other: &Timestamp) -> Arc<Duration> {
         let diff = self.0.abs_diff(other.0);
-        Duration(diff)
+        Arc::new(Duration(diff))
     }
 
     /// Returns timestamp number value as string
@@ -143,19 +147,29 @@ impl FromStr for Timestamp {
 }
 
 /// Wrapper type for timestamp that was created on a server, meaning it could be trusted
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct ServerTimestamp(Timestamp);
+#[derive(Debug, PartialEq, Clone, uniffi::Object, bincode::Encode, bincode::Decode)]
+pub struct ServerTimestamp(Arc<Timestamp>);
 
+//#[cfg(feature = "server")]
 impl ServerTimestamp {
-    #[cfg(feature = "server")]
     /// Creates a new server timestamp for current time, available only in server context
     pub fn now() -> Self {
         Self(Timestamp::now())
     }
 
-    /// Creates a new server timestamp with given amount of seconds
-    pub fn from_milliseconds(milliseconds: u64) -> Self {
+    /// Creates a new server timestamp with given amount of milliseconds
+    // HACK Remove once uniffi got updated
+    pub fn from_milliseconds_pure(milliseconds: u64) -> Self {
         Self(Timestamp::from_milliseconds(milliseconds))
+    }
+}
+
+#[uniffi::export]
+impl ServerTimestamp {
+    /// Creates a new server timestamp with given amount of milliseconds
+    #[uniffi::constructor]
+    pub fn from_milliseconds(milliseconds: u64) -> Arc<Self> {
+        Arc::new(Self(Timestamp::from_milliseconds(milliseconds)))
     }
 
     /// Returns server timestamp number value as string
@@ -169,18 +183,22 @@ impl FromStr for ServerTimestamp {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let timestamp: Timestamp = s.parse()?;
-        Ok(ServerTimestamp(timestamp))
+        Ok(ServerTimestamp(Arc::new(timestamp)))
     }
 }
 
 /// Time duration with milliseconds precision, string representation is in [HH:MM::SS.SSS] format
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, uniffi::Object, bincode::Encode, bincode::Decode)]
 pub struct Duration(u64);
 
+impl Duration {}
+
+#[uniffi::export]
 impl Duration {
     /// Create new duration from passed amount of milliseconds
-    pub fn from_milliseconds(milliseconds: u64) -> Self {
-        Self(milliseconds)
+    #[uniffi::constructor]
+    pub fn from_milliseconds(milliseconds: u64) -> Arc<Self> {
+        Arc::new(Self(milliseconds))
     }
 
     /// Number of a whole minutes in a duration
@@ -256,41 +274,47 @@ fn check_format(s: &str, format: Vec<char>) -> Result<(), String> {
 
 /// Timestamp that adjusts to the server's time to synchronize client and server clocks
 /// For clients that support time synchronization to minimize time drift between client and server
-#[derive(Default)]
+#[derive(Default, uniffi::Object, bincode::Decode, bincode::Encode)]
 pub struct SyncedTimestamp {
-    offset_ms: i64,
+    offset_ms: Mutex<i64>,
 }
 
-impl SyncedTimestamp {
-    /// Maximum possible round trip time after which adjustment would be ignored
-    pub const MAX_RTT_MS: u64 = 10_000;
+/// Maximum possible round trip time after which adjustment would be ignored
+pub const SYNCED_TIMESTAMP_MAX_RTT_MS: u64 = 10_000;
 
+#[uniffi::export]
+impl SyncedTimestamp {
     /// Create new synced timestamp
-    pub fn new() -> Self {
-        Self { offset_ms: 0 }
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
+            offset_ms: Mutex::new(0),
+        })
     }
 
     /// Adjusts the time offset using server time and round-trip time.
     pub fn adjust(
-        &mut self,
+        &self,
         server_time: &ServerTimestamp,
         sent_at: &Timestamp,
         received_at: &Timestamp,
     ) {
         let rtt = received_at.diff(sent_at);
-        if rtt.0 > SyncedTimestamp::MAX_RTT_MS {
+        if rtt.0 > SYNCED_TIMESTAMP_MAX_RTT_MS {
             // rtt is loo long and likely adjustment cannot be reliably calculated
             return;
         }
         let latency = rtt.0 / 2;
         let estimated_server_time = Timestamp::from_milliseconds(sent_at.0 + latency);
         // Not using Duration here as it can be only positive
-        self.offset_ms = server_time.0 .0 as i64 - estimated_server_time.0 as i64;
+        let mut offset = self.offset_ms.lock().unwrap();
+        *offset = server_time.0 .0 as i64 - estimated_server_time.0 as i64;
     }
 
     /// Returns current timestamp adjusted for the server offset
-    pub fn now(&self) -> Timestamp {
-        let adjusted = Timestamp::now().0 as i64 + self.offset_ms;
+    pub fn now(&self) -> Arc<Timestamp> {
+        let offset = *self.offset_ms.lock().unwrap();
+        let adjusted = Timestamp::now().0 as i64 + offset;
         Timestamp::from_milliseconds(adjusted as u64)
     }
 }
@@ -413,39 +437,86 @@ mod tests {
 
     #[test]
     fn synced_timestamp_adjust() {
-        let mut ts = SyncedTimestamp::new();
+        let ts = SyncedTimestamp::new();
 
         // Perfect sync
         ts.adjust(
-            &ServerTimestamp(Timestamp(1_500)),
+            &ServerTimestamp(Arc::new(Timestamp(1_500))),
             &Timestamp(0),
             &Timestamp(3_000),
         );
-        assert_eq!(ts.offset_ms, 0);
+        assert_eq!(*ts.offset_ms.lock().unwrap(), 0);
 
         // Server is ahead
         ts.adjust(
-            &ServerTimestamp(Timestamp(2_000)),
+            &ServerTimestamp(Arc::new(Timestamp(2_000))),
             &Timestamp(0),
             &Timestamp(3_000),
         );
-        assert_eq!(ts.offset_ms, 500);
+        assert_eq!(*ts.offset_ms.lock().unwrap(), 500);
 
         // Client is ahead
         ts.adjust(
-            &ServerTimestamp(Timestamp(1_000)),
+            &ServerTimestamp(Arc::new(Timestamp(1_000))),
             &Timestamp(2_000),
             &Timestamp(3_000),
         );
-        assert_eq!(ts.offset_ms, -1_500);
+        assert_eq!(*ts.offset_ms.lock().unwrap(), -1_500);
 
         // Long RTT adjustment are ignored
-        let mut ts = SyncedTimestamp::new();
+        let ts = SyncedTimestamp::new();
         ts.adjust(
-            &ServerTimestamp(Timestamp(4_000)),
+            &ServerTimestamp(Arc::new(Timestamp(4_000))),
             &Timestamp(0),
-            &Timestamp(SyncedTimestamp::MAX_RTT_MS + 1),
+            &Timestamp(SYNCED_TIMESTAMP_MAX_RTT_MS + 1),
         );
-        assert_eq!(ts.offset_ms, 0);
+        assert_eq!(*ts.offset_ms.lock().unwrap(), 0);
+    }
+
+    #[test]
+    fn timestamp_encoding() {
+        // Simple test when struct is backed by u64
+        let val = 42;
+        let config = bincode::config::standard();
+        assert_eq!(
+            bincode::encode_to_vec(Timestamp(val), config).unwrap(),
+            vec![val as u8]
+        );
+        let ts: Timestamp = bincode::decode_from_slice(&[val as u8], config).unwrap().0;
+        assert_eq!(ts, Timestamp(val));
+    }
+
+    #[test]
+    fn server_timestamp_encoding() {
+        // Test when struct is backed by Arc of another struct
+        let val = 42;
+        let config = bincode::config::standard();
+        assert_eq!(
+            bincode::encode_to_vec(ServerTimestamp::from_milliseconds(val), config).unwrap(),
+            vec![val as u8]
+        );
+        let ts: ServerTimestamp = bincode::decode_from_slice(&[val as u8], config).unwrap().0;
+        assert_eq!(ts, *ServerTimestamp::from_milliseconds(val));
+    }
+
+    #[test]
+    fn synced_timestamp_encoding() {
+        // Simple test when struct is backed by u64
+        let config = bincode::config::standard();
+        let ts = SyncedTimestamp::new();
+        ts.adjust(
+            &ServerTimestamp(Arc::new(Timestamp(2_000))),
+            &Timestamp(0),
+            &Timestamp(3_000),
+        );
+        let val = *ts.offset_ms.lock().unwrap(); // 500ms
+        assert_eq!(
+            bincode::encode_to_vec(ts, config).unwrap(),
+            vec![251, 232, 3]
+        );
+        let got: SyncedTimestamp = bincode::decode_from_slice(&[251, 232, 3], config)
+            .unwrap()
+            .0;
+        assert_eq!(*got.offset_ms.lock().unwrap(), val);
     }
 }

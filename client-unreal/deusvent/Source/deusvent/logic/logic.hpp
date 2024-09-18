@@ -17,9 +17,21 @@
 #include "logic_scaffolding.hpp"
 
 namespace logic {
+struct Duration;
+struct PingSerializer;
+struct ServerStatusSerializer;
 struct ServerTimestamp;
 struct SyncedTimestamp;
-struct Timestamp;
+struct Timestamp; 
+struct Ping; 
+struct ServerStatus;
+struct SerializationError;
+enum class Status;
+
+
+enum class Status: int32_t {
+    kOk = 1
+};
 
 namespace uniffi {
     struct FfiConverterServerTimestamp;
@@ -37,9 +49,100 @@ struct ServerTimestamp {
     ServerTimestamp &operator=(ServerTimestamp &&) = delete;
 
     ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
 
 private:
     ServerTimestamp(void *);
+
+    void *instance;
+};
+
+
+struct ServerStatus {
+    std::shared_ptr<ServerTimestamp> timestamp;
+    Status status;
+};
+
+namespace uniffi {
+    struct FfiConverterDuration;
+} // namespace uniffi
+
+struct Duration {
+    friend uniffi::FfiConverterDuration;
+
+    Duration() = delete;
+
+    Duration(const Duration &) = delete;
+    Duration(Duration &&) = delete;
+
+    Duration &operator=(const Duration &) = delete;
+    Duration &operator=(Duration &&) = delete;
+
+    ~Duration();
+    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
+    uint64_t whole_days();
+    uint64_t whole_hours();
+    uint64_t whole_minutes();
+
+private:
+    Duration(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterPingSerializer;
+} // namespace uniffi
+
+struct PingSerializer {
+    friend uniffi::FfiConverterPingSerializer;
+
+    PingSerializer() = delete;
+
+    PingSerializer(const PingSerializer &) = delete;
+    PingSerializer(PingSerializer &&) = delete;
+
+    PingSerializer &operator=(const PingSerializer &) = delete;
+    PingSerializer &operator=(PingSerializer &&) = delete;
+
+    ~PingSerializer();
+    static std::shared_ptr<PingSerializer> init(const Ping &data);
+    static std::shared_ptr<PingSerializer> deserialize(const std::string &data);
+    Ping data();
+    std::string debug_string();
+    std::string serialize();
+
+private:
+    PingSerializer(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterServerStatusSerializer;
+} // namespace uniffi
+
+struct ServerStatusSerializer {
+    friend uniffi::FfiConverterServerStatusSerializer;
+
+    ServerStatusSerializer() = delete;
+
+    ServerStatusSerializer(const ServerStatusSerializer &) = delete;
+    ServerStatusSerializer(ServerStatusSerializer &&) = delete;
+
+    ServerStatusSerializer &operator=(const ServerStatusSerializer &) = delete;
+    ServerStatusSerializer &operator=(ServerStatusSerializer &&) = delete;
+
+    ~ServerStatusSerializer();
+    static std::shared_ptr<ServerStatusSerializer> init(const ServerStatus &data);
+    static std::shared_ptr<ServerStatusSerializer> deserialize(const std::string &input);
+    ServerStatus data();
+    std::string debug_string();
+    std::string serialize();
+
+private:
+    ServerStatusSerializer(void *);
 
     void *instance;
 };
@@ -86,13 +189,60 @@ struct Timestamp {
     Timestamp &operator=(Timestamp &&) = delete;
 
     ~Timestamp();
+    static std::shared_ptr<Timestamp> from_milliseconds(uint64_t milliseconds);
     static std::shared_ptr<Timestamp> now();
+    std::string as_string();
+    std::shared_ptr<Duration> diff(const std::shared_ptr<Timestamp> &other);
 
 private:
     Timestamp(void *);
 
     void *instance;
 };
+
+
+struct Ping {
+    bool unused;
+};
+
+namespace uniffi {
+struct FfiConverterTypeSerializationError;
+} // namespace uniffi
+
+struct SerializationError: std::runtime_error {
+    friend uniffi::FfiConverterTypeSerializationError;
+
+    SerializationError() : std::runtime_error("") {}
+    SerializationError(const std::string &what_arg) : std::runtime_error(what_arg) {}
+
+    virtual void throw_underlying() = 0;
+
+    virtual ~SerializationError() = default;
+protected:
+    virtual int32_t get_variant_idx() const {
+        return 0;
+    };
+};
+/**
+ * Contains variants of SerializationError
+ */
+namespace serialization_error {
+
+struct BadData: SerializationError {
+    std::string msg;
+
+    BadData() : SerializationError("") {}
+    BadData(const std::string &what_arg) : SerializationError(what_arg) {}
+
+    void throw_underlying() override {
+        throw *this;
+    }
+
+    int32_t get_variant_idx() const override {
+        return 1;
+    }
+};
+} // namespace serialization_error
 
 namespace uniffi {struct RustStreamBuffer: std::basic_streambuf<char> {
     RustStreamBuffer(RustBuffer *buf) {
@@ -148,12 +298,52 @@ private:
 RustBuffer rustbuffer_alloc(int32_t);
 RustBuffer rustbuffer_from_bytes(const ForeignBytes &);
 void rustbuffer_free(RustBuffer);
+
+struct FfiConverterUInt64 {
+    static uint64_t lift(uint64_t);
+    static uint64_t lower(uint64_t);
+    static uint64_t read(RustStream &);
+    static void write(RustStream &, uint64_t);
+    static int32_t allocation_size(uint64_t);
+};
+
+struct FfiConverterBool {
+    static bool lift(uint8_t);
+    static uint8_t lower(bool);
+    static bool read(RustStream &);
+    static void write(RustStream &, bool);
+    static int32_t allocation_size(bool);
+};
 struct FfiConverterString {
     static std::string lift(RustBuffer buf);
     static RustBuffer lower(const std::string &);
     static std::string read(RustStream &);
     static void write(RustStream &, const std::string &);
     static int32_t allocation_size(const std::string &);
+};
+
+struct FfiConverterDuration {
+    static std::shared_ptr<Duration> lift(void *);
+    static void *lower(const std::shared_ptr<Duration> &);
+    static std::shared_ptr<Duration> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<Duration> &);
+    static int32_t allocation_size(const std::shared_ptr<Duration> &);
+};
+
+struct FfiConverterPingSerializer {
+    static std::shared_ptr<PingSerializer> lift(void *);
+    static void *lower(const std::shared_ptr<PingSerializer> &);
+    static std::shared_ptr<PingSerializer> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<PingSerializer> &);
+    static int32_t allocation_size(const std::shared_ptr<PingSerializer> &);
+};
+
+struct FfiConverterServerStatusSerializer {
+    static std::shared_ptr<ServerStatusSerializer> lift(void *);
+    static void *lower(const std::shared_ptr<ServerStatusSerializer> &);
+    static std::shared_ptr<ServerStatusSerializer> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<ServerStatusSerializer> &);
+    static int32_t allocation_size(const std::shared_ptr<ServerStatusSerializer> &);
 };
 
 struct FfiConverterServerTimestamp {
@@ -179,6 +369,39 @@ struct FfiConverterTimestamp {
     static void write(RustStream &, const std::shared_ptr<Timestamp> &);
     static int32_t allocation_size(const std::shared_ptr<Timestamp> &);
 };
+
+struct FfiConverterTypePing {
+    static Ping lift(RustBuffer);
+    static RustBuffer lower(const Ping &);
+    static Ping read(RustStream &);
+    static void write(RustStream &, const Ping &);
+    static int32_t allocation_size(const Ping &);
+};
+
+struct FfiConverterTypeServerStatus {
+    static ServerStatus lift(RustBuffer);
+    static RustBuffer lower(const ServerStatus &);
+    static ServerStatus read(RustStream &);
+    static void write(RustStream &, const ServerStatus &);
+    static int32_t allocation_size(const ServerStatus &);
+};
+
+struct FfiConverterTypeSerializationError {
+    static std::unique_ptr<SerializationError> lift(RustBuffer buf);
+    static RustBuffer lower(const SerializationError &);
+    static std::unique_ptr<SerializationError> read(RustStream &stream);
+    static void write(RustStream &stream, const SerializationError &);
+    static int32_t allocation_size(const SerializationError &);
+};
+
+struct FfiConverterTypeStatus {
+    static Status lift(RustBuffer);
+    static RustBuffer lower(const Status &);
+    static Status read(RustStream &);
+    static void write(RustStream &, const Status &);
+    static int32_t allocation_size(const Status &);
+};
 } // namespace uniffi
 
+std::string server_status_message_tag();
 } // namespace logic

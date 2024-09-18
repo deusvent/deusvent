@@ -23,6 +23,8 @@ log() { echo "[$(date)] $1"; }
 
 # Install dependencies and required tooling for the development
 deps() {
+  rustup default 1.81 # Pin the version to upgrade manually - makes CI consistent with local dev
+  rustup component add rustfmt clippy
   rustup target add x86_64-unknown-linux-gnu \
                     aarch64-apple-ios \
                     aarch64-apple-darwin \
@@ -37,7 +39,7 @@ build() {
 
   if [[ "$target" == "client-unreal" ]]; then
     log "Building logic"
-    (cd logic-binding-cpp && ./gen.sh)
+    (cd logic && ./generate_uniffi_binding.sh)
     
     # Build client-unreal using Docker containers with linux. Read here how to get access and tokens for yourself:
     # https://dev.epicgames.com/documentation/en-us/unreal-engine/container-deployments-and-images-for-unreal-editor-and-unreal-engine
@@ -75,8 +77,8 @@ EOF
       log "Building all Rust projects"
       cargo build --release --all-features
 
-      log "Building logic"
-      (cd logic-binding-cpp && ./gen.sh)
+      log "Building C++ binding"
+      (cd logic && ./generate_uniffi_binding.sh)
   fi
 }
 

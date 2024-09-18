@@ -4,3 +4,5 @@
 
 pub mod datetime;
 pub mod messages;
+
+uniffi::setup_scaffolding!();
