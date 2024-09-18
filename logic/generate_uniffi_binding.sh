@@ -6,7 +6,10 @@ cargo rustc --release --crate-type=cdylib --features "uniffi"
 
 # Generate C++ wrapper
 rm -rf ../client-unreal/deusvent/Source/deusvent/logic/*
-uniffi-bindgen-cpp --library ../target/release/liblogic.dylib --out-dir ../client-unreal/deusvent/Source/deusvent/logic
+
+# Lib extension is OS specific
+LIB_EXTENSION=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "dylib"; else echo "so"; fi)
+uniffi-bindgen-cpp --library "../target/release/liblogic.$LIB_EXTENSION" --out-dir ../client-unreal/deusvent/Source/deusvent/logic
 
 # Format using our style
 (cd .. && clang-format --Werror -i -style=file client-unreal/deusvent/Source/deusvent/logic/logic.cpp)
@@ -24,7 +27,10 @@ cp ../target/aarch64-apple-ios/release/liblogic.a ../client-unreal/deusvent/Thir
 cp ../target/aarch64-apple-darwin/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.arm64.darwin.a
 cp ../target/aarch64-linux-android/release/liblogic.a ../client-unreal/deusvent/ThirdParty/liblogic.arm64.android.a
 
-# HACK Disable warning to make it compilable
-sed -i '' $'1s|^|#pragma clang diagnostic ignored "-Wpessimizing-move"\\\n|' ../client-unreal/deusvent/Source/deusvent/logic/logic.cpp
-
+# HACK Generated logic code creates a warning that prevents us from building client - ignore it for now
+cd ../client-unreal/deusvent/Source/deusvent/logic
+mv logic.cpp tmp
+echo '#pragma clang diagnostic ignored "-Wpessimizing-move"' > logic.cpp
+cat tmp >> logic.cpp
+rm tmp
 
