@@ -39,7 +39,7 @@ build() {
 
   if [[ "$target" == "client-unreal" ]]; then
     log "Building logic"
-    (cd logic-binding-cpp && ./gen.sh)
+    (cd logic && ./generate_uniffi_binding.sh)
     
     # Build client-unreal using Docker containers with linux. Read here how to get access and tokens for yourself:
     # https://dev.epicgames.com/documentation/en-us/unreal-engine/container-deployments-and-images-for-unreal-editor-and-unreal-engine
