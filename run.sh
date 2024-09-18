@@ -23,6 +23,8 @@ log() { echo "[$(date)] $1"; }
 
 # Install dependencies and required tooling for the development
 deps() {
+  rustup default 1.81 # Pin the version to upgrade manually - makes CI consistent with local dev
+  rustup component add rustfmt clippy
   rustup target add x86_64-unknown-linux-gnu \
                     aarch64-apple-ios \
                     aarch64-apple-darwin \

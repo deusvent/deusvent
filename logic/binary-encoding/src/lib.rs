@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn check_valid_gateway_route_chars() {
-        let valid_symbols = &[b'-', b'.', b'/', b'_'];
+        let valid_symbols = b"-./_";
         for c in CHAR_SET_API_GATEWAY_ROUTE {
             let c = c as char;
             if !c.is_ascii_digit() && !c.is_ascii_alphabetic() {
