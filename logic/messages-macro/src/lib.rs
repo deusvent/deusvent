@@ -85,7 +85,7 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
                 self.data.clone()
             }
 
-            pub fn serialize(&self) -> Result<String, SerializationError> {
+            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
                 let data = bincode::encode_to_vec(&self.data, bincode::config::standard())?;
                 let mut output = #json_prefix.to_string();
                 output.push_str(&binary_encoding::encode_base94(&data));
@@ -94,14 +94,14 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
 
             #[uniffi::constructor]
-            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, SerializationError> {
+            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::SerializationError> {
                 if data.starts_with(#json_prefix) && data.ends_with(#json_suffix) {
                     let base64_data = &data[#json_prefix.len()..data.len() - #json_suffix.len()];
                     let decoded_data = binary_encoding::decode_base94(base64_data)?;
                     let instance: #struct_name_ident = bincode::decode_from_slice(&decoded_data, bincode::config::standard())?.0;
                     Ok(std::sync::Arc::new(Self {data: instance}))
                 } else {
-                    Err(SerializationError::BadData { msg: "No json_prefix and json_suffix found".to_string() })
+                    Err(crate::messages::SerializationError::BadData { msg: "No json_prefix and json_suffix found".to_string() })
                 }
             }
 
@@ -159,15 +159,15 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[cfg(feature = "server")]
         impl #struct_name_ident {
             /// Serialize message to Base94 encoded string and add 2 bytes message tag at the beginning
-            pub fn serialize(&self) -> Result<String, SerializationError> {
+            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
                 let data = bincode::encode_to_vec(&self, bincode::config::standard())?;
                 let serialized = binary_encoding::encode_base94(&data);
                 Ok(format!("{}{}", #message_tag, serialized))
             }
             /// Deserialize Base94 encoded string with 2 bytes message tag at the beginning back to message
-            pub fn deserialize(input: &str) -> Result<Self, SerializationError> {
+            pub fn deserialize(input: &str) -> Result<Self, crate::messages::SerializationError> {
                 if !input.starts_with(#message_tag) {
-                    return Err(SerializationError::BadData { msg: "Bad message tag".to_string() })
+                    return Err(crate::messages::SerializationError::BadData { msg: "Bad message tag".to_string() })
                 }
                 let input = &input[#message_tag.len()..];
                 let decoded = binary_encoding::decode_base94(input)?;
@@ -198,16 +198,16 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
                 self.data.clone()
             }
 
-            pub fn serialize(&self) -> Result<String, SerializationError> {
+            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
                 let data = bincode::encode_to_vec(&self.data, bincode::config::standard())?;
                 let serialized = binary_encoding::encode_base94(&data);
                 Ok(format!("{}{}", #message_tag, serialized))
             }
 
             #[uniffi::constructor]
-            pub fn deserialize(input: String) -> Result<std::sync::Arc<Self>, SerializationError> {
+            pub fn deserialize(input: String) -> Result<std::sync::Arc<Self>, crate::messages::SerializationError> {
                 if !input.starts_with(#message_tag) {
-                    return Err(SerializationError::BadData { msg: "Bad message tag".to_string() })
+                    return Err(crate::messages::SerializationError::BadData { msg: "Bad message tag".to_string() })
                 }
                 let input = &input[#message_tag.len()..];
                 let decoded = binary_encoding::decode_base94(input)?;

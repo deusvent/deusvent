@@ -1,6 +1,6 @@
 //! AES-GCM encryption
 //!
-//! TODO: Error handling and separate encrypt/decrypt from the AES payload itself
+//! TODO Error handling, better structure, documentation
 
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng},

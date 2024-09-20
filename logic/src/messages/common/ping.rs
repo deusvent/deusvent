@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use messages_macro::{client_message, server_message};
 
-use crate::{datetime::ServerTimestamp, messages::SerializationError};
+use crate::datetime::ServerTimestamp;
 
 /// Current server status
 #[derive(Debug, Clone, PartialEq, bincode::Decode, bincode::Encode, uniffi::Enum)]

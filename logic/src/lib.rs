@@ -3,7 +3,7 @@
 #![deny(missing_docs)] // Logic is a main shared library - require docs for all public interfaces
 
 pub mod datetime;
-pub mod messages;
 pub mod encryption;
+pub mod messages;
 
 uniffi::setup_scaffolding!();
