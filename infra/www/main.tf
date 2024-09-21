@@ -75,8 +75,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   # and we don't want CloudFront to forward request to S3 every time
   custom_error_response {
     error_code            = 404
-    response_code         = 404
-    response_page_path    = ""
     error_caching_min_ttl = 604800
   }
 
