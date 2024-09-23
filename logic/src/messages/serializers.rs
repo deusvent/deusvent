@@ -104,7 +104,7 @@ impl SignedClientMessage {
         Ok(ClientMessage::encode(&data, tag))
     }
 
-    pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, PublicKey), SerializationError>
+    pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, String), SerializationError>
     where
         T: bincode::Decode,
     {
@@ -117,10 +117,7 @@ impl SignedClientMessage {
         let signature = &&decoded_data[decoded_data.len() - SIGNATURE_SIZE..];
         let public_key_data = &decoded_data[decoded_data.len() - SIGNATURE_SIZE - PUBLIC_KEY_SIZE
             ..decoded_data.len() - SIGNATURE_SIZE];
-        let public_key =
-            PublicKey::deserialize(public_key_data).ok_or(SerializationError::BadData {
-                msg: "Invalid public key".to_string(),
-            })?;
+        let public_key = PublicKey::deserialize(public_key_data.to_vec())?;
         let signed_payload = &decoded_data[..decoded_data.len() - SIGNATURE_SIZE];
         if !encryption::verify(signed_payload, &public_key, signature) {
             return Err(SerializationError::BadData {
@@ -129,7 +126,7 @@ impl SignedClientMessage {
         }
         let msg_data = &decoded_data[..decoded_data.len() - SIGNATURE_SIZE - PUBLIC_KEY_SIZE];
         let instance: T = bincode::decode_from_slice(msg_data, bincode::config::standard())?.0;
-        Ok((instance, public_key))
+        Ok((instance, public_key.as_string()))
     }
 }
 
@@ -196,7 +193,7 @@ mod tests {
         assert_eq!(data.len(), 136);
         let parsed = SignedClientMessage::deserialize::<Ping>(&data, 1).unwrap();
         assert_eq!(msg, parsed.0);
-        assert_eq!(public_key.serialize(), parsed.1.serialize());
+        assert_eq!(public_key.as_string(), parsed.1);
 
         // Signature is stable for the same content
         let data_repeat =

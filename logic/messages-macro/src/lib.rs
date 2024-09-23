@@ -23,9 +23,9 @@ fn lock_mutex<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     }
 }
 
-/// Procedural macros that creates a custom serialization logic for the given client message
+/// Procedural macros that creates a custom serialization logic for the given public client message
 #[proc_macro_attribute]
-pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStream {
     let message_tag_lit = parse_macro_input!(attr as LitInt);
     let message_tag = message_tag_lit
         .base10_parse::<u16>()
@@ -84,6 +84,79 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
                 let instance: #struct_name_ident = crate::messages::serializers::ClientMessage::deserialize(&data, #message_tag)?;
                 Ok(std::sync::Arc::new(Self {data: instance}))
+            }
+
+            // For client development it's handy to have a quick way to dump message to log
+            pub fn debug_string(&self) -> String {
+                format!("{:?}", self.data)
+            }
+        }
+    };
+    TokenStream::from(expanded)
+}
+
+/// Procedural macros that creates a custom serialization logic for the given player client message
+#[proc_macro_attribute]
+pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let message_tag_lit = parse_macro_input!(attr as LitInt);
+    let message_tag = message_tag_lit
+        .base10_parse::<u16>()
+        .expect("Message tag has to be a u16 number");
+    let input = parse_macro_input!(item as DeriveInput);
+    let struct_name_ident = &input.ident;
+    let struct_name = struct_name_ident.to_string();
+    let mut message_tags = lock_mutex(&CLIENT_MESSAGE_TAGS);
+
+    // Ensure that no two messages share the same tag
+    if let Some(existing_name) = message_tags.get(&message_tag) {
+        if existing_name != &struct_name {
+            panic!(
+                "Duplicate client message tag={} for struct {} and struct {}",
+                message_tag, struct_name, existing_name
+            );
+        }
+    } else {
+        message_tags.insert(message_tag, struct_name.clone());
+    }
+
+    let message_serializer = syn::Ident::new(
+        &format!("{}Serializer", struct_name_ident),
+        struct_name_ident.span(),
+    );
+
+    let expanded = quote! {
+        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
+        #input
+
+        // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
+        // struct will be responsible for data encoding
+        #[cfg(feature="uniffi")]
+        #[derive(uniffi::Object)]
+        struct #message_serializer {
+            data: #struct_name_ident,
+            public_key: String, // TODO Not sure if that is a right thing to do
+        }
+
+        #[cfg(feature="uniffi")]
+        #[uniffi::export]
+        impl #message_serializer {
+            #[uniffi::constructor]
+            pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
+                std::sync::Arc::new(Self {data, public_key: String::new()})
+            }
+
+            pub fn data(&self) -> #struct_name_ident {
+                self.data.clone()
+            }
+
+            pub fn serialize(&self, public_key: std::sync::Arc<crate::encryption::PublicKey>, private_key: std::sync::Arc<crate::encryption::PrivateKey>) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::SignedClientMessage::serialize(&self.data, #message_tag, public_key.as_ref(), private_key.as_ref())
+            }
+
+            #[uniffi::constructor]
+            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
+                let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self {data: data.0, public_key: data.1}))
             }
 
             // For client development it's handy to have a quick way to dump message to log

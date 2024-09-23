@@ -6,10 +6,15 @@
 //! TODO Better documentation and describe pretty much everything from https://github.com/deusvent/deusvent/issues/41
 //! in here as it's much closer to code and it would be useful in a long run
 
+use std::sync::Arc;
+
+use binary_encoding::encode_base94;
 use ecc::{
     ecdsa_sign, ecdsa_verify, generate_ecc_keys, EccPrivateKey, EccPublicKey, ECC_PRIVATE_KEY_SIZE,
     ECC_PUBLIC_KEY_SIZE, ECC_SIGNATURE_SIZE,
 };
+
+use crate::messages::serializers::SerializationError;
 
 mod aes;
 mod ecc;
@@ -19,30 +24,49 @@ pub const PUBLIC_KEY_SIZE: usize = ECC_PUBLIC_KEY_SIZE;
 pub const PRIVATE_KEY_SIZE: usize = ECC_PRIVATE_KEY_SIZE;
 
 /// Private key - used for signing and decryption
+#[derive(uniffi::Object)]
 pub struct PrivateKey(EccPrivateKey);
 
+#[uniffi::export]
 impl PrivateKey {
     pub fn serialize(&self) -> Vec<u8> {
         self.0.serialize()
     }
 
-    pub fn deserialize(data: &[u8]) -> Option<Self> {
-        EccPrivateKey::deserialize(data).map(PrivateKey)
+    #[uniffi::constructor]
+    pub fn deserialize(data: Vec<u8>) -> Result<Arc<Self>, SerializationError> {
+        EccPrivateKey::deserialize(&data)
+            .map(|key| Arc::new(Self(key)))
+            .ok_or_else(|| SerializationError::BadData {
+                msg: "Invalid private key data".to_string(),
+            })
     }
 }
 
 /// Public key - used as a public user identifier, for signature verification and encrypting data
 /// Although we can always derive public key from a private key it's a good practice to have two types
 /// for keys so we can be explicit when one or another is needed, rather than passing private key everywhere
+#[derive(uniffi::Object)]
 pub struct PublicKey(EccPublicKey);
 
+#[uniffi::export]
 impl PublicKey {
     pub fn serialize(&self) -> Vec<u8> {
         self.0.serialize()
     }
 
-    pub fn deserialize(data: &[u8]) -> Option<Self> {
-        EccPublicKey::deserialize(data).map(PublicKey)
+    #[uniffi::constructor]
+    pub fn deserialize(data: Vec<u8>) -> Result<Arc<Self>, SerializationError> {
+        EccPublicKey::deserialize(&data)
+            .map(|key| Arc::new(PublicKey(key)))
+            .ok_or_else(|| SerializationError::BadData {
+                msg: "Invalid public key data".to_string(),
+            })
+    }
+
+    pub fn as_string(&self) -> String {
+        let data = self.0.serialize();
+        encode_base94(&data)
     }
 }
 
