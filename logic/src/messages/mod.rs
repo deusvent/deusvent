@@ -25,42 +25,8 @@
 //! be used in long term storages as bincode is not backward or forward compatible.
 
 pub mod common;
-
-/// Errors that may happen during data serializations
-#[derive(Debug, uniffi::Error, thiserror::Error)]
-pub enum SerializationError {
-    /// Bad data which cannot be deserialized
-    #[error("Data error: {msg}")]
-    BadData {
-        /// Error message
-        msg: String,
-    },
-}
-
-impl From<bincode::error::DecodeError> for SerializationError {
-    fn from(err: bincode::error::DecodeError) -> Self {
-        Self::BadData {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<bincode::error::EncodeError> for SerializationError {
-    fn from(err: bincode::error::EncodeError) -> Self {
-        Self::BadData {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<binary_encoding::EncodingError> for SerializationError {
-    fn from(err: binary_encoding::EncodingError) -> Self {
-        let binary_encoding::EncodingError::BadData(err) = err;
-        SerializationError::BadData {
-            msg: err.to_string(),
-        }
-    }
-}
+pub mod game;
+pub mod serializers;
 
 #[cfg(test)]
 mod tests {

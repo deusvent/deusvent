@@ -1,6 +1,5 @@
 extern crate proc_macro;
 
-use binary_encoding::encode_message_tag;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, LitInt};
@@ -48,13 +47,6 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         message_tags.insert(message_tag, struct_name.clone());
     }
 
-    // We fully control JSON creation process and don't need to support any other clients,
-    // so we can avoid the overhead of full JSON parsing. Instead, we define a fixed prefix and suffix
-    // for the JSON structure and use simple string concatenation and substring operations as a shortcut
-    let encoded_tag = encode_message_tag(message_tag);
-    let json_prefix = format!(r#"{{"k":"{}","v":""#, encoded_tag);
-    let json_suffix = r#""}"#;
-
     let message_serializer = syn::Ident::new(
         &format!("{}Serializer", struct_name_ident),
         struct_name_ident.span(),
@@ -72,7 +64,6 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             data: #struct_name_ident
         }
 
-
         #[cfg(feature="uniffi")]
         #[uniffi::export]
         impl #message_serializer {
@@ -85,24 +76,14 @@ pub fn client_message(attr: TokenStream, item: TokenStream) -> TokenStream {
                 self.data.clone()
             }
 
-            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
-                let data = bincode::encode_to_vec(&self.data, bincode::config::standard())?;
-                let mut output = #json_prefix.to_string();
-                output.push_str(&binary_encoding::encode_base94(&data));
-                output.push_str(#json_suffix);
-                Ok(output)
+            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientMessage::serialize(&self.data, #message_tag)
             }
 
             #[uniffi::constructor]
-            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::SerializationError> {
-                if data.starts_with(#json_prefix) && data.ends_with(#json_suffix) {
-                    let base64_data = &data[#json_prefix.len()..data.len() - #json_suffix.len()];
-                    let decoded_data = binary_encoding::decode_base94(base64_data)?;
-                    let instance: #struct_name_ident = bincode::decode_from_slice(&decoded_data, bincode::config::standard())?.0;
-                    Ok(std::sync::Arc::new(Self {data: instance}))
-                } else {
-                    Err(crate::messages::SerializationError::BadData { msg: "No json_prefix and json_suffix found".to_string() })
-                }
+            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
+                let instance: #struct_name_ident = crate::messages::serializers::ClientMessage::deserialize(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self {data: instance}))
             }
 
             // For client development it's handy to have a quick way to dump message to log
@@ -149,7 +130,7 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         struct_name_ident.span(),
     );
 
-    let message_tag = binary_encoding::encode_message_tag(message_tag);
+    let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
 
     let expanded = quote! {
         #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
@@ -158,21 +139,11 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         // For server we can have serializing logic on a struct itself, it makes things easier to work with
         #[cfg(feature = "server")]
         impl #struct_name_ident {
-            /// Serialize message to Base94 encoded string and add 2 bytes message tag at the beginning
-            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
-                let data = bincode::encode_to_vec(&self, bincode::config::standard())?;
-                let serialized = binary_encoding::encode_base94(&data);
-                Ok(format!("{}{}", #message_tag, serialized))
+            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ServerMessage::serialize(self, #message_tag)
             }
-            /// Deserialize Base94 encoded string with 2 bytes message tag at the beginning back to message
-            pub fn deserialize(input: &str) -> Result<Self, crate::messages::SerializationError> {
-                if !input.starts_with(#message_tag) {
-                    return Err(crate::messages::SerializationError::BadData { msg: "Bad message tag".to_string() })
-                }
-                let input = &input[#message_tag.len()..];
-                let decoded = binary_encoding::decode_base94(input)?;
-                let instance: Self = bincode::decode_from_slice(&decoded, bincode::config::standard())?.0;
-                Ok(instance)
+            pub fn deserialize(data: &str) -> Result<Self, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ServerMessage::deserialize(data, #message_tag)
             }
         }
 
@@ -195,24 +166,19 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
 
             pub fn data(&self) -> #struct_name_ident {
+                // TODO Can't we get rid of clone? It's because of uniffi, but it also used
+                //      in ::serialize, so it's extra clone
                 self.data.clone()
             }
 
-            pub fn serialize(&self) -> Result<String, crate::messages::SerializationError> {
-                let data = bincode::encode_to_vec(&self.data, bincode::config::standard())?;
-                let serialized = binary_encoding::encode_base94(&data);
-                Ok(format!("{}{}", #message_tag, serialized))
+            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ServerMessage::serialize(&self.data, #message_tag)
             }
 
             #[uniffi::constructor]
-            pub fn deserialize(input: String) -> Result<std::sync::Arc<Self>, crate::messages::SerializationError> {
-                if !input.starts_with(#message_tag) {
-                    return Err(crate::messages::SerializationError::BadData { msg: "Bad message tag".to_string() })
-                }
-                let input = &input[#message_tag.len()..];
-                let decoded = binary_encoding::decode_base94(input)?;
-                let instance: #struct_name_ident = bincode::decode_from_slice(&decoded, bincode::config::standard())?.0;
-                Ok(std::sync::Arc::new(Self {data: instance}))
+            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
+                let instance: #struct_name_ident = crate::messages::serializers::ServerMessage::deserialize(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self{data: instance}))
             }
 
             // For client development it's handy to have a quick way to dump message to log
@@ -225,7 +191,7 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[uniffi::export]
         #[allow(non_snake_case)]
         fn #struct_message_tag_fn() -> String {
-            #message_tag.to_string()
+            #message_tag_encoded.to_string()
         }
     };
     TokenStream::from(expanded)
