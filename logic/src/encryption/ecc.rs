@@ -1,93 +1,102 @@
-//! ECC encryption, keys and signing using ECDH and ECDSA
-//! TODO Error handling, better structure, documentation
+//! Low-level ECC encryption building blocks, keys generation and signing using ECDSA
 
 use hkdf::Hkdf;
 use p256::ecdsa::VerifyingKey;
 use p256::ecdsa::{signature::Signer, signature::Verifier, Signature, SigningKey};
-use p256::{
-    elliptic_curve::sec1::ToEncodedPoint,
-    elliptic_curve::{PublicKey, SecretKey},
-    NistP256,
-};
+use p256::elliptic_curve::sec1::FromEncodedPoint;
+use p256::elliptic_curve::PublicKey;
+use p256::EncodedPoint;
+use p256::{elliptic_curve::sec1::ToEncodedPoint, elliptic_curve::SecretKey, NistP256};
 use rand::rngs::OsRng;
 use rand::RngCore;
 use sha2::Sha256;
 
-use super::aes::{self, AesPayload};
+use super::aes::{aes_decrypt, aes_encrypt, AES_KEY_SIZE, AES_NONCE_SIZE};
 
-/// ECC keys
-pub struct EccKeys {
-    private_key: SecretKey<NistP256>,
-    public_key: PublicKey<NistP256>,
-}
+/// Size of a ECDSA signature in bytes
+pub const ECC_SIGNATURE_SIZE: usize = 64;
 
-impl EccKeys {
-    /// Generate new random pair of ECC keys
-    pub fn generate() -> Self {
-        let private_key = SecretKey::random(&mut OsRng); // Generate a new private key
-        let public_key = private_key.public_key();
-        Self {
-            private_key,
-            public_key,
+/// Size of ECC compressed public key in bytes
+pub const ECC_PUBLIC_KEY_SIZE: usize = 33;
+
+/// Size of ECC private key
+pub const ECC_PRIVATE_KEY_SIZE: usize = 32;
+
+/// Size of random salt which is added to every encrypted message, same size as AES nonce for convenience
+pub const ECC_SALT_SIZE: usize = AES_NONCE_SIZE;
+pub struct EccPrivateKey(SecretKey<NistP256>);
+pub struct EccPublicKey(PublicKey<NistP256>);
+
+impl EccPublicKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        self.0.to_encoded_point(true).as_bytes().to_vec()
+    }
+
+    pub fn deserialize(data: &[u8]) -> Option<Self> {
+        let point = EncodedPoint::from_bytes(data).ok()?;
+        if let Some(key) = PublicKey::from_encoded_point(&point).into_option() {
+            return Some(Self(key));
         }
+        None
     }
 }
 
-/// Sign payload with given ECC keys
-pub fn ecdsa_sign(keys: &EccKeys, payload: &[u8]) -> Vec<u8> {
-    let signing_key = SigningKey::from_bytes(&keys.private_key.to_bytes()).unwrap();
-    let signature: Signature = signing_key.sign(payload);
+impl EccPrivateKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        self.0.to_bytes().to_vec()
+    }
+
+    pub fn deserialize(data: &[u8]) -> Option<Self> {
+        let key = SecretKey::from_bytes(data.into()).ok()?;
+        Some(Self(key))
+    }
+}
+
+pub fn generate_ecc_keys() -> (EccPrivateKey, EccPublicKey) {
+    let private_key = SecretKey::random(&mut OsRng);
+    let public_key = private_key.public_key();
+    (EccPrivateKey(private_key), EccPublicKey(public_key))
+}
+
+pub fn ecdsa_sign(data: &[u8], private_key: &EccPrivateKey) -> Vec<u8> {
+    let signing_key = SigningKey::from_bytes(&private_key.0.to_bytes())
+        .expect("Signing key should be creatable from a private key bytes");
+    let signature: Signature = signing_key.sign(data);
     signature.to_vec()
 }
 
-/// Verify signature for the supplied payload with given keys
-pub fn ecdsa_verify(keys: &EccKeys, payload: &[u8], signature: &[u8]) -> bool {
-    let verifying_key =
-        VerifyingKey::from_encoded_point(&keys.public_key.to_encoded_point(false)).unwrap();
-    let signature = Signature::from_bytes(signature.into()).unwrap();
-    verifying_key.verify(payload, &signature).is_ok()
-}
-
-/// Encrypted data
-pub struct EncryptedData {
-    data: AesPayload,
-    salt: Vec<u8>,
-}
-
-/// Encrypt given payload with supplied ECC keys. Will derive a random AES
-/// key from the private key and with salt will use it for encryption
-pub fn encrypt(keys: &EccKeys, data: &[u8]) -> EncryptedData {
-    // Generate some random 12 bytes salt first
-    let mut salt = vec![0u8; 12];
-    OsRng.fill_bytes(&mut salt);
-
-    // Now using salt and ECC private key we can derive a new AES key
-    let aes_key = derive_aes_key(keys, &salt);
-
-    // Now we can encrypt the payload using AES, reusing generated salt as nonce
-    let payload = aes::AesPayload::encrypt(data, &aes_key, &salt).unwrap();
-
-    // Return payload and used salt
-    EncryptedData {
-        data: payload,
-        salt: salt.to_vec(),
+pub fn ecdsa_verify(data: &[u8], public_key: &EccPublicKey, signature: &[u8]) -> bool {
+    let verifying_key = VerifyingKey::from_encoded_point(&public_key.0.to_encoded_point(false));
+    let signature = Signature::from_bytes(signature.into());
+    match (verifying_key, signature) {
+        (Ok(key), Ok(signature)) => key.verify(data, &signature).is_ok(),
+        _ => false,
     }
 }
 
-/// Decrypt the given payload with supplied ECC keys using the provided salt.
-/// Will derive the same AES key from the private key and salt to decrypt the payload.
-pub fn decrypt(keys: &EccKeys, encrypted_data: &EncryptedData) -> Vec<u8> {
-    // Extract the salt used during encryption
-    let salt = &encrypted_data.salt;
-    let aes_key = derive_aes_key(keys, salt);
-    aes::AesPayload::decrypt(&encrypted_data.data, &aes_key, salt).unwrap()
+pub struct EncryptedData {
+    data: Vec<u8>,
+    salt: [u8; ECC_SALT_SIZE],
 }
 
-fn derive_aes_key(keys: &EccKeys, salt: &Vec<u8>) -> Vec<u8> {
-    let hkdf = Hkdf::<Sha256>::new(Some(salt), &keys.private_key.to_bytes());
+pub fn encrypt(data: &[u8], private_key: &EccPrivateKey) -> EncryptedData {
+    let mut salt = [0; ECC_SALT_SIZE];
+    OsRng.fill_bytes(&mut salt);
+    let key = derive_aes_key(private_key, &salt);
+    let data = aes_encrypt(data, &key, &salt);
+    EncryptedData { data, salt }
+}
+
+pub fn decrypt(data: &EncryptedData, private_key: &EccPrivateKey) -> Option<Vec<u8>> {
+    let aes_key = derive_aes_key(private_key, &data.salt);
+    aes_decrypt(&data.data, &aes_key, &data.salt)
+}
+
+fn derive_aes_key(private_key: &EccPrivateKey, salt: &[u8; ECC_SALT_SIZE]) -> [u8; AES_KEY_SIZE] {
+    let hkdf = Hkdf::<Sha256>::new(Some(salt), &private_key.0.to_bytes());
     let mut aes_key = [0u8; 32];
     hkdf.expand(b"ephemeral-key", &mut aes_key).unwrap();
-    aes_key.to_vec()
+    aes_key
 }
 
 #[cfg(test)]
@@ -95,29 +104,48 @@ mod tests {
     use super::*;
 
     #[test]
-    fn generate_new_keys() {
+    fn test_serialization() {
         // Check that keys can be generated
-        let keys = EccKeys::generate();
-        assert_eq!(keys.private_key.to_bytes().len(), 32);
-        assert_eq!(keys.public_key.to_encoded_point(true).as_bytes().len(), 33);
+        let (private_key, public_key) = generate_ecc_keys();
+        let private_key_bytes = private_key.serialize();
+        let public_key_bytes = public_key.serialize();
+
+        // Check sizes
+        assert_eq!(private_key_bytes.len(), ECC_PRIVATE_KEY_SIZE);
+        assert_eq!(public_key_bytes.len(), ECC_PUBLIC_KEY_SIZE);
+
+        // Test deserialization: we can't check for equality with existing keys, but we can check for
+        // serialized data from deserialized keys and that way ensure that deserialized works
+        assert_eq!(
+            private_key_bytes,
+            EccPrivateKey::deserialize(&private_key_bytes)
+                .unwrap()
+                .serialize()
+        );
+        assert_eq!(
+            public_key_bytes,
+            EccPublicKey::deserialize(&public_key_bytes)
+                .unwrap()
+                .serialize()
+        );
     }
 
     #[test]
     fn sign_verify() {
         let payload = vec![1u8; 10];
-        let keys = EccKeys::generate();
-        let signature = ecdsa_sign(&keys, &payload);
-        assert_eq!(signature.len(), 64);
-        assert!(ecdsa_verify(&keys, &payload, &signature));
+        let (private_key, public_key) = generate_ecc_keys();
+        let signature = ecdsa_sign(&payload, &private_key);
+        assert_eq!(signature.len(), ECC_SIGNATURE_SIZE);
+        assert!(ecdsa_verify(&payload, &public_key, &signature));
     }
 
     #[test]
     fn encrypt_decrypt() {
         let data = vec![1u8; 10];
-        let keys = EccKeys::generate();
-        let encrypted = encrypt(&keys, &data);
-        assert_eq!(encrypted.salt.len(), 12);
-        let decrypted = decrypt(&keys, &encrypted);
+        let (private_key, _) = generate_ecc_keys();
+        let encrypted = encrypt(&data, &private_key);
+        assert_eq!(encrypted.salt.len(), ECC_SALT_SIZE);
+        let decrypted = decrypt(&encrypted, &private_key).unwrap();
         assert_eq!(decrypted, data);
     }
 }
