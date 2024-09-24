@@ -8,9 +8,11 @@ use crate::datetime::ServerTimestamp;
 
 #[server_message(2)]
 pub struct Decay {
-    started_at: Arc<ServerTimestamp>,
-    length: Arc<Duration>,
+    pub started_at: Arc<ServerTimestamp>,
+    pub length: Arc<Duration>,
 }
 
 #[client_player_message(2)]
-pub struct DecayQuery {}
+pub struct DecayQuery {
+    pub unused: bool,
+}

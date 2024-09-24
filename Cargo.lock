@@ -1311,6 +1311,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lambda-game-decay"
+version = "0.1.0"
+dependencies = [
+ "api-core",
+ "lambda_http",
+ "tokio",
+]
+
+[[package]]
 name = "lambda-ws-connect"
 version = "0.1.0"
 dependencies = [

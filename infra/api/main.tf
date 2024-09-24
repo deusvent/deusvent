@@ -52,6 +52,7 @@ locals {
     { name = "common-ping", route = "-." },
     { name = "ws-connect", route = "$connect" },
     { name = "ws-disconnect", route = "$disconnect" },
+    { name = "game-decay", route = "-/" },
   ]
 }
 

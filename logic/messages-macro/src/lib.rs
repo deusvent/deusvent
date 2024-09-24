@@ -1,3 +1,6 @@
+// TODO Add better documentation for the code and also to the generated code
+//      It's possible to add comments for generated code via #[doc="Comment for generated code"]
+
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -52,7 +55,10 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         struct_name_ident.span(),
     );
 
+    let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
+
     let expanded = quote! {
+        #[doc = concat!("Message tag = ", #message_tag_encoded)]
         #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
         #input
 
@@ -124,9 +130,24 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         struct_name_ident.span(),
     );
 
+    let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
+
     let expanded = quote! {
+        #[doc = concat!("Message tag = ", #message_tag_encoded)]
         #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
         #input
+
+        #[cfg(feature = "server")]
+        impl #struct_name_ident {
+            pub fn serialize(&self, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::SignedClientMessage::serialize(&self, #message_tag, &public_key, &private_key)
+            }
+
+            pub fn deserialize(data: String) -> Result<(Self, String), crate::messages::serializers::SerializationError> {
+                let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
+                Ok(data)
+            }
+        }
 
         // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
         // struct will be responsible for data encoding
@@ -206,6 +227,7 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
     let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
 
     let expanded = quote! {
+        #[doc = concat!("Message tag = ", #message_tag_encoded)]
         #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
         #input
 

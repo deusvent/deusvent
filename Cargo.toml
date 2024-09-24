@@ -2,10 +2,11 @@
 resolver = "2"
 
 members = [
+    "api/core",
     "api/lambda-common-ping",
+    "api/lambda-game-decay",
     "api/lambda-ws-connect",
     "api/lambda-ws-disconnect",
-    "api/core",
     "logic",
     "logic/binary-encoding",
     "logic/messages-macro"
