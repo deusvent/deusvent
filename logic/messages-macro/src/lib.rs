@@ -1,6 +1,3 @@
-// TODO Add better documentation for the code and also to the generated code
-//      It's possible to add comments for generated code via #[doc="Comment for generated code"]
-
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -73,26 +70,30 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #[cfg(feature="uniffi")]
         #[uniffi::export]
         impl #message_serializer {
+            #[doc = "Creates new message serializer"]
             #[uniffi::constructor]
             pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
                 std::sync::Arc::new(Self {data})
             }
 
+            #[doc = "Returns underlying message"]
             pub fn data(&self) -> #struct_name_ident {
                 self.data.clone()
             }
 
+            #[doc = "Serialize underlying message to string"]
             pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ClientMessage::serialize(&self.data, #message_tag)
             }
 
+            #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
                 let instance: #struct_name_ident = crate::messages::serializers::ClientMessage::deserialize(&data, #message_tag)?;
                 Ok(std::sync::Arc::new(Self {data: instance}))
             }
 
-            // For client development it's handy to have a quick way to dump message to log
+            #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
                 format!("{:?}", self.data)
             }
@@ -139,10 +140,12 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
 
         #[cfg(feature = "server")]
         impl #struct_name_ident {
+            #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
             pub fn serialize(&self, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::SignedClientMessage::serialize(&self, #message_tag, &public_key, &private_key)
             }
 
+            #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
             pub fn deserialize(data: String) -> Result<(Self, String), crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
@@ -161,26 +164,30 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #[cfg(feature="uniffi")]
         #[uniffi::export]
         impl #message_serializer {
+            #[doc = "Creates new serializer"]
             #[uniffi::constructor]
             pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
                 std::sync::Arc::new(Self {data, public_key: String::new()})
             }
 
+            #[doc = "Returns underlying message"]
             pub fn data(&self) -> #struct_name_ident {
                 self.data.clone()
             }
 
+            #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
             pub fn serialize(&self, public_key: std::sync::Arc<crate::encryption::PublicKey>, private_key: std::sync::Arc<crate::encryption::PrivateKey>) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::SignedClientMessage::serialize(&self.data, #message_tag, public_key.as_ref(), private_key.as_ref())
             }
 
+            #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
                 Ok(std::sync::Arc::new(Self {data: data.0, public_key: data.1}))
             }
 
-            // For client development it's handy to have a quick way to dump message to log
+            #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
                 format!("{:?}", self.data)
             }
@@ -234,9 +241,11 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         // For server we can have serializing logic on a struct itself, it makes things easier to work with
         #[cfg(feature = "server")]
         impl #struct_name_ident {
+            #[doc = "Serialize message to string"]
             pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ServerMessage::serialize(self, #message_tag)
             }
+            #[doc = "Deserialize string back to the message type"]
             pub fn deserialize(data: &str) -> Result<Self, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ServerMessage::deserialize(data, #message_tag)
             }
@@ -255,33 +264,38 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[cfg(all(feature = "uniffi", not(feature = "server")))]
         #[uniffi::export]
         impl #message_serializer {
+            #[doc = "Creates new message serializer"]
             #[uniffi::constructor]
             pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
                 std::sync::Arc::new(Self {data})
             }
 
+            #[doc = "Returns underlying message"]
             pub fn data(&self) -> #struct_name_ident {
                 // TODO Can't we get rid of clone? It's because of uniffi, but it also used
                 //      in ::serialize, so it's extra clone
                 self.data.clone()
             }
 
+            #[doc = "Serialize underlying message to string"]
             pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ServerMessage::serialize(&self.data, #message_tag)
             }
 
+            #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
                 let instance: #struct_name_ident = crate::messages::serializers::ServerMessage::deserialize(&data, #message_tag)?;
                 Ok(std::sync::Arc::new(Self{data: instance}))
             }
 
-            // For client development it's handy to have a quick way to dump message to log
+            #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
                 format!("{:?}", self.data)
             }
         }
 
+        #[doc = "Return message tag string"]
         #[cfg(feature="uniffi")]
         #[uniffi::export]
         #[allow(non_snake_case)]

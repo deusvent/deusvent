@@ -3,8 +3,7 @@
 //! Under the hood we are using AES, ECC and ECDSA, but all the details are abstracted away and convenient
 //! wrappers provided instead.
 //!
-//! TODO Better documentation and describe pretty much everything from https://github.com/deusvent/deusvent/issues/41
-//! in here as it's much closer to code and it would be useful in a long run
+//! Comparing to RSA all the operations that involves ECC takes microseconds and can be called from the main thread
 
 use std::sync::Arc;
 
@@ -20,12 +19,19 @@ use crate::messages::serializers::SerializationError;
 mod aes;
 mod ecc;
 
+/// Signature size in bytes
 pub const SIGNATURE_SIZE: usize = ECC_SIGNATURE_SIZE;
+
+/// Public key size in bytes
 pub const PUBLIC_KEY_SIZE: usize = ECC_PUBLIC_KEY_SIZE;
+
+/// Private key size in bytes
 pub const PRIVATE_KEY_SIZE: usize = ECC_PRIVATE_KEY_SIZE;
 
+/// Encryption error
 #[derive(Error, Debug, uniffi::Error)]
 pub enum EncryptionError {
+    /// Encryption or decryption cannot proceed because of invalid input data
     #[error("Invalid data")]
     InvalidData,
 }
@@ -36,10 +42,12 @@ pub struct PrivateKey(EccPrivateKey);
 
 #[uniffi::export]
 impl PrivateKey {
+    /// Serialize private key to the array of bytes of `PRIVATE_KEY_SIZE` length
     pub fn serialize(&self) -> Vec<u8> {
         self.0.serialize()
     }
 
+    /// Deserialize array of bytes to the public key
     #[uniffi::constructor]
     pub fn deserialize(data: Vec<u8>) -> Result<Arc<Self>, SerializationError> {
         EccPrivateKey::deserialize(&data)
@@ -58,10 +66,12 @@ pub struct PublicKey(EccPublicKey);
 
 #[uniffi::export]
 impl PublicKey {
+    /// Serialize public key to the array of bytes of `PUBLIC_KEY_SIZE` length
     pub fn serialize(&self) -> Vec<u8> {
         self.0.serialize()
     }
 
+    /// Deserialize array of bytes to public key
     #[uniffi::constructor]
     pub fn deserialize(data: Vec<u8>) -> Result<Arc<Self>, SerializationError> {
         EccPublicKey::deserialize(&data)
@@ -71,18 +81,23 @@ impl PublicKey {
             })
     }
 
+    /// Returns public key as an Base94 encoded string
     pub fn as_string(&self) -> String {
         let data = self.0.serialize();
         encode_base94(&data)
     }
 }
 
+/// Pair of encryption keys
 #[derive(uniffi::Record)]
 pub struct Keys {
+    /// Public key
     pub public_key: Arc<PublicKey>,
+    /// Private key
     pub private_key: Arc<PrivateKey>,
 }
 
+/// Generate new encryption keys
 #[uniffi::export]
 pub fn generate_new_keys() -> Keys {
     let keys = generate_ecc_keys();
@@ -92,10 +107,12 @@ pub fn generate_new_keys() -> Keys {
     }
 }
 
+/// Sign payload with provided private key. Returns a signature bytes
 pub fn sign(data: &[u8], private_key: &PrivateKey) -> Vec<u8> {
     ecdsa_sign(data, &private_key.0)
 }
 
+/// Verifies payload signature
 pub fn verify(payload: &[u8], public_key: &PublicKey, signature: &[u8]) -> bool {
     ecdsa_verify(payload, &public_key.0, signature)
 }
@@ -109,6 +126,7 @@ pub struct EncryptedString {
 
 #[uniffi::export]
 impl EncryptedString {
+    /// Creates a new encrypted string by encrypting supplied text with private key
     #[uniffi::constructor]
     pub fn new(plaintext: String, private_key: &PrivateKey) -> Arc<Self> {
         let encrypted = ecc::encrypt(plaintext.as_bytes(), &private_key.0);
@@ -118,6 +136,7 @@ impl EncryptedString {
         })
     }
 
+    /// Decrypt the encrypted string using a supplied private key
     pub fn decrypt(&self, private_key: &PrivateKey) -> Result<String, EncryptionError> {
         let encrypted = EncryptedData {
             data: self.data.clone(),
@@ -138,9 +157,15 @@ impl EncryptedString {
 #[derive(PartialEq, Debug, Clone, uniffi::Enum, bincode::Encode, bincode::Decode)]
 pub enum SafeString {
     /// Encrypted string
-    Encrypted { data: Arc<EncryptedString> },
+    Encrypted {
+        /// Encrypted value
+        data: Arc<EncryptedString>,
+    },
     /// Raw non encrypted string
-    Plaintext { value: String },
+    Plaintext {
+        /// Plaintext value
+        value: String,
+    },
 }
 
 #[cfg(test)]

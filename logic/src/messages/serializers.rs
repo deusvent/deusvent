@@ -1,3 +1,13 @@
+//! Serializers responsible for serializing (and deserializing) different types of messages between client and API.
+//!
+//! There are 3 types of messages:
+//! 1) Server messages are created on a server and send to clients. They are transferred as bincode data encoded
+//!    in Base94 strings
+//! 2) Public client messages are send from clients to server. They don't have any player specific information and
+//!    don't contain any authentication tokens. They are encoded as JSON like {"k":[MESSAGE_TAG], "v":[MESSAGE_PAYLOAD]}
+//! 3) Player signed messages. Such messages are player specific and includes player identifier (public_key) and also
+//!    a signature for the payload and as a proof that player identifier is correct one
+
 use binary_encoding::encode_message_tag;
 
 use crate::encryption::{self, PrivateKey, PublicKey, PUBLIC_KEY_SIZE, SIGNATURE_SIZE};
@@ -38,6 +48,7 @@ impl From<binary_encoding::EncodingError> for SerializationError {
     }
 }
 
+/// Serializer for client messages
 pub struct ClientMessage;
 impl ClientMessage {
     const JSON_PREFIX_START: &'static str = r#"{"k":""#;
@@ -72,11 +83,14 @@ impl ClientMessage {
         Ok(decoded_data)
     }
 
+    /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
+    /// encoded tag and "v" has an encoded payload
     pub fn serialize(msg: &impl bincode::Encode, tag: u16) -> Result<String, SerializationError> {
         let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
         Ok(ClientMessage::encode(&data, tag))
     }
 
+    /// Deserialize JSON string back to the client message type
     pub fn deserialize<T>(data: &str, tag: u16) -> Result<T, SerializationError>
     where
         T: bincode::Decode,
@@ -87,8 +101,12 @@ impl ClientMessage {
     }
 }
 
+/// Serializer for signed client messages which includes signature and player public_key identifier
 pub struct SignedClientMessage;
 impl SignedClientMessage {
+    /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
+    /// encoded tag and "v" has an encoded payload. Payload also includes public_key so that API
+    /// can identify the player and signature to proof the public_key validity
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
@@ -104,6 +122,8 @@ impl SignedClientMessage {
         Ok(ClientMessage::encode(&data, tag))
     }
 
+    /// Deserialize JSON string back to the pair of client message type and a player identifier string. Returns error if
+    /// payload cannot be verified and signature is wrong
     pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, String), SerializationError>
     where
         T: bincode::Decode,
@@ -130,14 +150,19 @@ impl SignedClientMessage {
     }
 }
 
+/// Serializer for messages coming from the server to the client
 pub struct ServerMessage;
 impl ServerMessage {
+    /// Serialize server message using bincode and Base94. First 2 bytes are message tag which
+    /// allows clients efficiently check what kind of message it receive and deserialize it appropriately
     pub fn serialize(msg: &impl bincode::Encode, tag: u16) -> Result<String, SerializationError> {
         let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
         let serialized = binary_encoding::encode_base94(&data);
         Ok(format!("{}{}", encode_message_tag(tag), serialized))
     }
 
+    /// Deserialize string to the server message, it will return an error if supplied message tag
+    /// doesn't match first two bytes of a message
     pub fn deserialize<T>(data: &str, tag: u16) -> Result<T, SerializationError>
     where
         T: bincode::Decode,

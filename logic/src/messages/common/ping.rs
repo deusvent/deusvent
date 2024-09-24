@@ -30,5 +30,6 @@ pub struct ServerStatus {
 #[client_public_message(1)]
 pub struct Ping {
     // HACK https://github.com/NordSecurity/uniffi-bindgen-cpp/issues/45
+    /// Unused
     pub unused: bool,
 }
