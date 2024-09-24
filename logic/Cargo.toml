@@ -4,16 +4,23 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
+# Local deps
 messages-macro = { path = "messages-macro" }
 binary-encoding = { path = "binary-encoding" }
-
-bincode = "=2.0.0-rc.3"
-thiserror = "1.0.64"
-time = { version = "0.3.36", features = ["local-offset" ] }
 
 # HACK We should not include uniffi all the time, but we blocked by https://github.com/mozilla/uniffi-rs/pull/2113
 # It fixed in uniffi v0.28.0 while we stuck with 0.25.0 for now because of uniffi-bindgen-cpp
 uniffi = { version = "0.25.0" }
+
+# Other deps
+bincode = "=2.0.0-rc.3"
+thiserror = "1.0.64"
+time = { version = "0.3.36", features = ["local-offset" ] }
+aes-gcm = "0.10.3"
+p256 = { version = "0.13.2", features = ["ecdh", "ecdsa"] }
+rand = "0.8.5"
+hkdf = "0.12.4"
+sha2 = "0.10.8"
 
 [dev-dependencies]
 serde_json = "1.0"

@@ -40,23 +40,30 @@ void UConnection::Connect() {
 
     Connection->OnMessage().AddLambda([this](const FString &Message) {
         // Testing message tag and deserialization
-        auto Prefix = FString(logic::server_status_message_tag().c_str());
-        if (Message.StartsWith(Prefix)) {
+        auto PrefixServerStatus = FString(logic::server_status_message_tag().c_str());
+        auto PrefixDecay = FString(logic::decay_message_tag().c_str());
+        if (Message.StartsWith(PrefixServerStatus)) {
             auto Deserialized = logic::ServerStatusSerializer::deserialize(TCHAR_TO_UTF8(*Message));
             auto ServerHealth = Deserialized->data();
             UE_LOGFMT(LogConnection,
                       Display,
                       "Received ServerHealth: {0}",
                       FString(Deserialized->debug_string().c_str()));
+            this->OnCommonServerInfo().Broadcast(Message);
+        } else if (Message.StartsWith(PrefixDecay)) {
+            auto Deserialized = logic::DecaySerializer::deserialize(TCHAR_TO_UTF8(*Message));
+            auto Decay = Deserialized->data();
+            UE_LOGFMT(LogConnection,
+                      Display,
+                      "Received Decay: {0}",
+                      FString(Deserialized->debug_string().c_str()));
         } else {
             UE_LOGFMT(LogConnection,
                       Display,
                       "Unknown message tag received: {0}, wanted prefix: {1}",
                       Message,
-                      Prefix);
+                      PrefixServerStatus);
         }
-
-        this->OnCommonServerInfo().Broadcast(Message);
     });
 
     Connection->OnMessageSent().AddLambda([](const FString &Message) {
@@ -84,9 +91,19 @@ void UConnection::SendPing() const {
     }
 
     // Testing sending message using new serializers
-    auto Data = logic::Ping{};
-    auto Serializer = logic::PingSerializer::init(Data);
-    auto Msg = FString(Serializer->serialize().c_str());
-    UE_LOGFMT(LogConnection, Display, "Sending Ping Msg: {0}", Msg);
-    Connection->Send(Msg);
+    auto Msg = logic::Ping{};
+    auto Serializer = logic::PingSerializer::init(Msg);
+    auto Data = FString(Serializer->serialize().c_str());
+    UE_LOGFMT(LogConnection, Display, "Sending Ping Data: {0}", Data);
+    Connection->Send(Data);
+}
+
+// Testing sending signed authenticated message
+void UConnection::SendDecayQuery() const {
+    auto Keys = logic::generate_new_keys();
+    auto Msg = logic::DecayQuery{.unused = false};
+    auto Serializer = logic::DecayQuerySerializer::init(Msg);
+    auto Data = FString(Serializer->serialize(Keys.public_key, Keys.private_key).c_str());
+    UE_LOGFMT(LogConnection, Display, "Sending Query Data: {0}", Data);
+    Connection->Send(Data);
 }

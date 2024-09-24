@@ -16,6 +16,7 @@ class DEUSVENT_API UConnection : public UObject {
     void Connect();
     void Disconnect();
     void SendPing() const;
+    void SendDecayQuery() const;
 
     DECLARE_EVENT_OneParam(UConnection, FCommonServerInfo, FString /* message::common.ServerInfo */)
         FCommonServerInfo &OnCommonServerInfo() {

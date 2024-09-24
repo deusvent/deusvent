@@ -2,9 +2,9 @@
 
 use std::sync::Arc;
 
-use messages_macro::{client_message, server_message};
+use messages_macro::{client_public_message, server_message};
 
-use crate::{datetime::ServerTimestamp, messages::SerializationError};
+use crate::datetime::ServerTimestamp;
 
 /// Current server status
 #[derive(Debug, Clone, PartialEq, bincode::Decode, bincode::Encode, uniffi::Enum)]
@@ -27,8 +27,9 @@ pub struct ServerStatus {
 }
 
 /// Client ping message
-#[client_message(1)]
+#[client_public_message(1)]
 pub struct Ping {
     // HACK https://github.com/NordSecurity/uniffi-bindgen-cpp/issues/45
-    unused: bool,
+    /// Unused
+    pub unused: bool,
 }
