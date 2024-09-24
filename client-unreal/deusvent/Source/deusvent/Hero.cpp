@@ -20,4 +20,5 @@ void AHero::BeginPlay() {
         [](FString Message) { UE_LOGFMT(LogTemp, Display, "OnServerInfo: {0}", Message); });
 
     GameInstance->Connection->SendPing();
+    GameInstance->Connection->SendDecayQuery();
 }

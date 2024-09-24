@@ -183,8 +183,9 @@ mod tests {
     #[test]
     fn client_signed_message_serialization() {
         let msg = Ping { unused: false };
-        let (private_key, public_key) = encryption::generate_new_keys();
-        let data = SignedClientMessage::serialize(&msg, 1, &public_key, &private_key).unwrap();
+        let keys = encryption::generate_new_keys();
+        let data =
+            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
 
         // Ensure it's valid JSON
         let _: Value = serde_json::from_slice(data.as_bytes()).unwrap();
@@ -193,17 +194,17 @@ mod tests {
         assert_eq!(data.len(), 136);
         let parsed = SignedClientMessage::deserialize::<Ping>(&data, 1).unwrap();
         assert_eq!(msg, parsed.0);
-        assert_eq!(public_key.as_string(), parsed.1);
+        assert_eq!(keys.public_key.as_string(), parsed.1);
 
         // Signature is stable for the same content
         let data_repeat =
-            SignedClientMessage::serialize(&msg, 1, &public_key, &private_key).unwrap();
+            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
         assert_eq!(data, data_repeat);
 
         // Signature differs for different content
         let msg = Ping { unused: true };
         let data_different_msg =
-            SignedClientMessage::serialize(&msg, 1, &public_key, &private_key).unwrap();
+            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
         assert_ne!(data, data_different_msg);
         let parsed = SignedClientMessage::deserialize::<Ping>(&data_different_msg, 1).unwrap();
         assert_eq!(msg, parsed.0);

@@ -70,9 +70,19 @@ impl PublicKey {
     }
 }
 
-pub fn generate_new_keys() -> (PrivateKey, PublicKey) {
+#[derive(uniffi::Record)]
+pub struct Keys {
+    pub public_key: Arc<PublicKey>,
+    pub private_key: Arc<PrivateKey>,
+}
+
+#[uniffi::export]
+pub fn generate_new_keys() -> Keys {
     let keys = generate_ecc_keys();
-    (PrivateKey(keys.0), PublicKey(keys.1))
+    Keys {
+        private_key: Arc::new(PrivateKey(keys.0)),
+        public_key: Arc::new(PublicKey(keys.1)),
+    }
 }
 
 pub fn sign(data: &[u8], private_key: &PrivateKey) -> Vec<u8> {
