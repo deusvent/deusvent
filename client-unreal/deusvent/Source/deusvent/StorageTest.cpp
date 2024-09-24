@@ -20,7 +20,7 @@ void NewStorage(const bool ClearDB,
 #endif
 }
 
-TEST_CASE("Deusvent.Storage", "[unit]") {
+TEST_CASE_NAMED(UStorageTests, "Deusvent.Storage", "[unit]") {
     SECTION("Connect->Disconnect") {
         NewStorage(true, "test", [](UStorage *_) {
             // Disconnect will be executed automatically

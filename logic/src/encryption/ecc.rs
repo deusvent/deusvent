@@ -24,7 +24,11 @@ pub const ECC_PRIVATE_KEY_SIZE: usize = 32;
 
 /// Size of random salt which is added to every encrypted message, same size as AES nonce for convenience
 pub const ECC_SALT_SIZE: usize = AES_NONCE_SIZE;
+
+#[derive(Clone)]
 pub struct EccPrivateKey(SecretKey<NistP256>);
+
+#[derive(Clone)]
 pub struct EccPublicKey(PublicKey<NistP256>);
 
 impl EccPublicKey {
@@ -74,9 +78,10 @@ pub fn ecdsa_verify(data: &[u8], public_key: &EccPublicKey, signature: &[u8]) ->
     }
 }
 
+#[derive(PartialEq, Debug, Clone, bincode::Encode, bincode::Decode)]
 pub struct EncryptedData {
-    data: Vec<u8>,
-    salt: [u8; ECC_SALT_SIZE],
+    pub data: Vec<u8>,
+    pub salt: [u8; ECC_SALT_SIZE],
 }
 
 pub fn encrypt(data: &[u8], private_key: &EccPrivateKey) -> EncryptedData {

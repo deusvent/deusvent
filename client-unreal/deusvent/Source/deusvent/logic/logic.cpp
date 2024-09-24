@@ -65,6 +65,22 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_logic_checksum_method_encryptedstring_decrypt() != 14315) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_identityserializer_data() != 35595) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_identityserializer_debug_string() != 33099) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_identityserializer_serialize() != 40849) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_logic_checksum_method_pingserializer_data() != 55445) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
@@ -138,6 +154,18 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_constructor_duration_from_milliseconds() != 62484) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_encryptedstring_new() != 41058) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_identityserializer_deserialize() != 32642) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_identityserializer_new() != 12413) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -488,6 +516,70 @@ Duration::~Duration() {
     uniffi::rust_call(uniffi_logic_fn_free_duration, nullptr, this->instance);
 }
 
+EncryptedString::EncryptedString(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<EncryptedString>
+EncryptedString::init(const std::string &plaintext,
+                      const std::shared_ptr<PrivateKey> &private_key) {
+    return std::shared_ptr<EncryptedString>(
+        new EncryptedString(uniffi::rust_call(uniffi_logic_fn_constructor_encryptedstring_new,
+                                              nullptr,
+                                              uniffi::FfiConverterString::lower(plaintext),
+                                              uniffi::FfiConverterPrivateKey::lower(private_key))));
+}
+
+std::string EncryptedString::decrypt(const std::shared_ptr<PrivateKey> &private_key) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_encryptedstring_decrypt,
+                          uniffi::FfiConverterTypeEncryptionError::lift,
+                          this->instance,
+                          uniffi::FfiConverterPrivateKey::lower(private_key)));
+}
+
+EncryptedString::~EncryptedString() {
+    uniffi::rust_call(uniffi_logic_fn_free_encryptedstring, nullptr, this->instance);
+}
+
+IdentitySerializer::IdentitySerializer(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<IdentitySerializer> IdentitySerializer::init(const Identity &data) {
+    return std::shared_ptr<IdentitySerializer>(
+        new IdentitySerializer(uniffi::rust_call(uniffi_logic_fn_constructor_identityserializer_new,
+                                                 nullptr,
+                                                 uniffi::FfiConverterTypeIdentity::lower(data))));
+}
+
+std::shared_ptr<IdentitySerializer> IdentitySerializer::deserialize(const std::string &data) {
+    return std::shared_ptr<IdentitySerializer>(new IdentitySerializer(
+        uniffi::rust_call(uniffi_logic_fn_constructor_identityserializer_deserialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          uniffi::FfiConverterString::lower(data))));
+}
+
+Identity IdentitySerializer::data() {
+    return uniffi::FfiConverterTypeIdentity::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_identityserializer_data, nullptr, this->instance));
+}
+std::string IdentitySerializer::debug_string() {
+    return uniffi::FfiConverterString::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_identityserializer_debug_string, nullptr, this->instance));
+}
+std::string IdentitySerializer::serialize(const std::shared_ptr<PublicKey> &public_key,
+                                          const std::shared_ptr<PrivateKey> &private_key) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_identityserializer_serialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          this->instance,
+                          uniffi::FfiConverterPublicKey::lower(public_key),
+                          uniffi::FfiConverterPrivateKey::lower(private_key)));
+}
+
+IdentitySerializer::~IdentitySerializer() {
+    uniffi::rust_call(uniffi_logic_fn_free_identityserializer, nullptr, this->instance);
+}
+
 PingSerializer::PingSerializer(void *ptr) : instance(ptr) {
 }
 
@@ -755,6 +847,56 @@ int32_t FfiConverterDuration::allocation_size(const std::shared_ptr<Duration> &)
     return 8;
 }
 
+std::shared_ptr<EncryptedString> FfiConverterEncryptedString::lift(void *ptr) {
+    return std::shared_ptr<EncryptedString>(new EncryptedString(ptr));
+}
+
+void *FfiConverterEncryptedString::lower(const std::shared_ptr<EncryptedString> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<EncryptedString> FfiConverterEncryptedString::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<EncryptedString>(new EncryptedString(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterEncryptedString::write(RustStream &stream,
+                                        const std::shared_ptr<EncryptedString> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterEncryptedString::allocation_size(const std::shared_ptr<EncryptedString> &) {
+    return 8;
+}
+
+std::shared_ptr<IdentitySerializer> FfiConverterIdentitySerializer::lift(void *ptr) {
+    return std::shared_ptr<IdentitySerializer>(new IdentitySerializer(ptr));
+}
+
+void *FfiConverterIdentitySerializer::lower(const std::shared_ptr<IdentitySerializer> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<IdentitySerializer> FfiConverterIdentitySerializer::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<IdentitySerializer>(
+        new IdentitySerializer(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterIdentitySerializer::write(RustStream &stream,
+                                           const std::shared_ptr<IdentitySerializer> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t
+FfiConverterIdentitySerializer::allocation_size(const std::shared_ptr<IdentitySerializer> &) {
+    return 8;
+}
+
 std::shared_ptr<PingSerializer> FfiConverterPingSerializer::lift(void *ptr) {
     return std::shared_ptr<PingSerializer>(new PingSerializer(ptr));
 }
@@ -986,6 +1128,36 @@ int32_t FfiConverterTypeDecayQuery::allocation_size(const DecayQuery &val) {
     return FfiConverterBool::allocation_size(val.unused);
 }
 
+Identity FfiConverterTypeIdentity::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeIdentity::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeIdentity::lower(const Identity &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeIdentity::write(stream, val);
+
+    return std::move(buf);
+}
+
+Identity FfiConverterTypeIdentity::read(RustStream &stream) {
+    return {FfiConverterTypeSafeString::read(stream)};
+}
+
+void FfiConverterTypeIdentity::write(RustStream &stream, const Identity &val) {
+    FfiConverterTypeSafeString::write(stream, val.name);
+}
+
+int32_t FfiConverterTypeIdentity::allocation_size(const Identity &val) {
+    return FfiConverterTypeSafeString::allocation_size(val.name);
+}
+
 Keys FfiConverterTypeKeys::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = FfiConverterTypeKeys::read(stream);
@@ -1078,6 +1250,142 @@ void FfiConverterTypeServerStatus::write(RustStream &stream, const ServerStatus 
 int32_t FfiConverterTypeServerStatus::allocation_size(const ServerStatus &val) {
     return FfiConverterServerTimestamp::allocation_size(val.timestamp) +
            FfiConverterTypeStatus::allocation_size(val.status);
+}
+
+std::unique_ptr<EncryptionError> FfiConverterTypeEncryptionError::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeEncryptionError::read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterTypeEncryptionError::lower(const EncryptionError &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeEncryptionError::write(stream, val);
+
+    return std::move(buf);
+}
+
+std::unique_ptr<EncryptionError> FfiConverterTypeEncryptionError::read(RustStream &stream) {
+    int32_t v;
+    stream >> v;
+
+    switch (v) {
+    case 1: {
+        encryption_error::InvalidData var;
+        return std::make_unique<encryption_error::InvalidData>(var);
+    }
+    default:
+        throw std::runtime_error("Unexpected error variant");
+    }
+}
+
+void FfiConverterTypeEncryptionError::write(RustStream &stream, const EncryptionError &val) {
+    stream << val.get_variant_idx();
+    switch (val.get_variant_idx()) {
+    case 1: {
+        auto &var = static_cast<const encryption_error::InvalidData &>(val);
+        break;
+    }
+    }
+}
+
+int32_t FfiConverterTypeEncryptionError::allocation_size(const EncryptionError &val) {
+    switch (val.get_variant_idx()) {
+    case 1: {
+        auto &var = static_cast<const encryption_error::InvalidData &>(val);
+        return static_cast<int32_t>(sizeof(int32_t));
+    }
+    default:
+        throw std::runtime_error("Unexpected error variant");
+    }
+}
+
+SafeString FfiConverterTypeSafeString::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeSafeString::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeSafeString::lower(const SafeString &val) {
+    auto buf = rustbuffer_alloc(FfiConverterTypeSafeString::allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeSafeString::write(stream, val);
+
+    return std::move(buf);
+}
+
+SafeString FfiConverterTypeSafeString::read(RustStream &stream) {
+    int32_t variant_id;
+    stream >> variant_id;
+
+    switch (variant_id) {
+
+    case 1:
+        return SafeString::kEncrypted{
+            .data = FfiConverterEncryptedString::read(stream),
+        };
+
+    case 2:
+        return SafeString::kPlaintext{
+            .value = FfiConverterString::read(stream),
+        };
+
+    default:
+        throw std::runtime_error("No matching SafeString variant");
+    }
+}
+
+void FfiConverterTypeSafeString::write(RustStream &stream, const SafeString &val) {
+    int32_t variant_id = static_cast<int32_t>(val.variant.index() + 1);
+
+    stream << variant_id;
+
+    std::visit(
+        [&](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, SafeString::kEncrypted>) {
+                FfiConverterEncryptedString::write(stream, arg.data);
+            } else if constexpr (std::is_same_v<T, SafeString::kPlaintext>) {
+                FfiConverterString::write(stream, arg.value);
+            } else {
+                static_assert(always_false_v<T>, "non-exhaustive SafeString visitor");
+            }
+        },
+        val.variant);
+}
+
+int32_t FfiConverterTypeSafeString::allocation_size(const SafeString &val) {
+    int32_t size = sizeof(int32_t);
+
+    size += std::visit(
+        [&](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, SafeString::kEncrypted>) {
+                int32_t size = 0;
+                size += FfiConverterEncryptedString::allocation_size(arg.data);
+                return size;
+            } else if constexpr (std::is_same_v<T, SafeString::kPlaintext>) {
+                int32_t size = 0;
+                size += FfiConverterString::allocation_size(arg.value);
+                return size;
+            } else {
+                static_assert(always_false_v<T>, "non-exhaustive SafeString visitor");
+            }
+
+            return 0;
+        },
+        val.variant);
+
+    return size;
 }
 
 std::unique_ptr<SerializationError> FfiConverterTypeSerializationError::lift(RustBuffer buf) {

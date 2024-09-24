@@ -45,7 +45,9 @@ mod tests {
 
     #[test]
     fn test_request() {
-        let (private_key, public_key) = encryption::generate_new_keys();
+        let keys = encryption::generate_new_keys();
+        let private_key = (*keys.private_key).clone();
+        let public_key = (*keys.public_key).clone();
         let data = DecayQuery { unused: false };
         let req = data.serialize(public_key, private_key).unwrap();
         let now = ServerTimestamp::from_milliseconds_pure(10);
