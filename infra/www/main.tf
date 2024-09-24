@@ -71,6 +71,13 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
+  # Cache 404 for a week to reduce load to S3. Many crawlers requests for common files like index.php
+  # and we don't want CloudFront to forward request to S3 every time
+  custom_error_response {
+    error_code            = 404
+    error_caching_min_ttl = 604800
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
