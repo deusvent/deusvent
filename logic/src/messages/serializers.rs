@@ -51,8 +51,7 @@ impl From<binary_encoding::EncodingError> for SerializationError {
 }
 
 /// Request id for the client messages. Server messages includes that so we can match it to the correct client requests
-#[derive(Debug, PartialEq, uniffi::Object)]
-pub struct RequestId(pub u8);
+type RequestId = u8;
 
 /// Unique player identifier equal to it's generated public key
 #[derive(Debug, PartialEq, uniffi::Object)]
@@ -94,39 +93,6 @@ impl ClientPublicMessage {
         Ok(decoded_data)
     }
 
-    fn encode_to_binary(
-        msg: &impl bincode::Encode,
-        request_id: u8,
-    ) -> Result<Vec<u8>, SerializationError> {
-        let config = bincode::config::standard();
-
-        // Manually pre-allocate vector with +1 capacity so that request_id would fit without reallocation along with encoded data
-        let mut size_writer = bincode::enc::write::SizeWriter::default();
-        bincode::encode_into_writer(msg, &mut size_writer, config)?;
-        let msg_size = size_writer.bytes_written;
-        let mut data = vec![0; msg_size + 1];
-
-        // Now encode the message and add request_id itself as a last byte
-        bincode::encode_into_slice(msg, &mut data, config)?;
-        data[msg_size] = request_id;
-        Ok(data)
-    }
-
-    fn decode_from_binary<T>(data: &[u8]) -> Result<(T, RequestId), SerializationError>
-    where
-        T: bincode::Decode,
-    {
-        if data.len() < 2 {
-            return Err(SerializationError::BadData {
-                msg: "Too short data to decode".to_string(),
-            });
-        }
-        let request_id = data[data.len() - 1];
-        let payload = &data[..&data.len() - 1];
-        let instance: T = bincode::decode_from_slice(payload, bincode::config::standard())?.0;
-        Ok((instance, RequestId(request_id)))
-    }
-
     /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
     /// encoded tag and "v" has an encoded payload
     pub fn serialize(
@@ -134,7 +100,7 @@ impl ClientPublicMessage {
         tag: u16,
         request_id: u8,
     ) -> Result<String, SerializationError> {
-        let data = ClientPublicMessage::encode_to_binary(msg, request_id)?;
+        let data = encode_to_binary(msg, request_id)?;
         Ok(ClientPublicMessage::encode_to_string(&data, tag))
     }
 
@@ -144,7 +110,7 @@ impl ClientPublicMessage {
         T: bincode::Decode,
     {
         let data = ClientPublicMessage::decode_from_string(data, tag)?;
-        ClientPublicMessage::decode_from_binary(&data)
+        decode_from_binary(&data)
     }
 }
 
@@ -161,7 +127,7 @@ impl ClientPlayerMessage {
         public_key: &PublicKey,
         private_key: &PrivateKey,
     ) -> Result<String, SerializationError> {
-        let encoded_message = ClientPublicMessage::encode_to_binary(msg, request_id)?;
+        let encoded_message = encode_to_binary(msg, request_id)?;
         let mut data = Vec::with_capacity(encoded_message.len() + PUBLIC_KEY_SIZE + SIGNATURE_SIZE);
         data.extend_from_slice(&encoded_message);
         data.extend_from_slice(&public_key.serialize());
@@ -196,7 +162,7 @@ impl ClientPlayerMessage {
             });
         }
         let msg_data = &decoded_data[..decoded_data.len() - SIGNATURE_SIZE - PUBLIC_KEY_SIZE];
-        let (instance, request_id) = ClientPublicMessage::decode_from_binary(msg_data)?;
+        let (instance, request_id) = decode_from_binary(msg_data)?;
         Ok((instance, public_key, request_id))
     }
 }
@@ -206,15 +172,19 @@ pub struct ServerMessage;
 impl ServerMessage {
     /// Serialize server message using bincode and Base94. First 2 bytes are message tag which
     /// allows clients efficiently check what kind of message it receive and deserialize it appropriately
-    pub fn serialize(msg: &impl bincode::Encode, tag: u16) -> Result<String, SerializationError> {
-        let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
+    pub fn serialize(
+        msg: &impl bincode::Encode,
+        tag: u16,
+        request_id: u8,
+    ) -> Result<String, SerializationError> {
+        let data = encode_to_binary(msg, request_id)?;
         let serialized = binary_encoding::encode_base94(&data);
         Ok(format!("{}{}", encode_message_tag(tag), serialized))
     }
 
     /// Deserialize string to the server message, it will return an error if supplied message tag
     /// doesn't match first two bytes of a message
-    pub fn deserialize<T>(data: &str, tag: u16) -> Result<T, SerializationError>
+    pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, RequestId), SerializationError>
     where
         T: bincode::Decode,
     {
@@ -226,9 +196,42 @@ impl ServerMessage {
         }
         let input = &data[message_tag.len()..];
         let decoded = binary_encoding::decode_base94(input)?;
-        let instance: T = bincode::decode_from_slice(&decoded, bincode::config::standard())?.0;
-        Ok(instance)
+        let (instance, request_id) = decode_from_binary::<T>(&decoded)?;
+        Ok((instance, request_id))
     }
+}
+
+fn encode_to_binary(
+    msg: &impl bincode::Encode,
+    request_id: u8,
+) -> Result<Vec<u8>, SerializationError> {
+    let config = bincode::config::standard();
+
+    // Manually pre-allocate vector with +1 capacity so that request_id would fit without reallocation along with encoded data
+    let mut size_writer = bincode::enc::write::SizeWriter::default();
+    bincode::encode_into_writer(msg, &mut size_writer, config)?;
+    let msg_size = size_writer.bytes_written;
+    let mut data = vec![0; msg_size + 1];
+
+    // Now encode the message and add request_id itself as a last byte
+    bincode::encode_into_slice(msg, &mut data, config)?;
+    data[msg_size] = request_id;
+    Ok(data)
+}
+
+fn decode_from_binary<T>(data: &[u8]) -> Result<(T, RequestId), SerializationError>
+where
+    T: bincode::Decode,
+{
+    if data.len() < 2 {
+        return Err(SerializationError::BadData {
+            msg: "Too short data to decode".to_string(),
+        });
+    }
+    let request_id = data[data.len() - 1];
+    let payload = &data[..&data.len() - 1];
+    let instance: T = bincode::decode_from_slice(payload, bincode::config::standard())?.0;
+    Ok((instance, request_id))
 }
 
 #[cfg(test)]
@@ -254,7 +257,7 @@ mod tests {
         // Ensure deserialization works
         let got: (Ping, RequestId) = ClientPublicMessage::deserialize(&data, 1).unwrap();
         assert_eq!(got.0, msg);
-        assert_eq!(got.1, RequestId(1));
+        assert_eq!(got.1, 1);
 
         // Ensure it's valid JSON
         let _: Value = serde_json::from_slice(data.as_bytes()).unwrap();
@@ -275,7 +278,7 @@ mod tests {
         let parsed = ClientPlayerMessage::deserialize::<Ping>(&data, 1).unwrap();
         assert_eq!(parsed.0, msg);
         assert_eq!(parsed.1.as_string(), keys.public_key.as_string());
-        assert_eq!(parsed.2, RequestId(1));
+        assert_eq!(parsed.2, 1);
 
         // Signature is stable for the same content
         let data_repeat =
@@ -299,9 +302,11 @@ mod tests {
             timestamp: Arc::new(ServerTimestamp::from_milliseconds_pure(1)),
             status: Status::OK,
         };
-        let data = ServerMessage::serialize(&msg, 1).unwrap();
-        assert_eq!(data, "-.#f");
-        let got: ServerStatus = ServerMessage::deserialize(&data, 1).unwrap();
-        assert_eq!(msg, got);
+        let data = ServerMessage::serialize(&msg, 1, 1).unwrap();
+        assert_eq!(data, "-.(H4");
+        assert_eq!(data.len(), 5); // 2(tag) + 1(timestamp) + 1(status) + 1(request_id)
+        let got: (ServerStatus, RequestId) = ServerMessage::deserialize(&data, 1).unwrap();
+        assert_eq!(got.0, msg);
+        assert_eq!(got.1, 1)
     }
 }

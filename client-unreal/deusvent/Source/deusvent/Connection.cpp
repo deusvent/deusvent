@@ -11,7 +11,7 @@ DEFINE_LOG_CATEGORY(LogConnection);
 
 void UConnection::Initialize(const char *ServerAddress) {
     this->Address = ServerAddress;
-    this->RequestId = 0;
+    this->RequestId = 100;
 }
 
 void UConnection::Connect() {
@@ -48,16 +48,18 @@ void UConnection::Connect() {
             auto ServerHealth = Deserialized->data();
             UE_LOGFMT(LogConnection,
                       Display,
-                      "Received ServerHealth: {0}",
-                      FString(Deserialized->debug_string().c_str()));
+                      "Received ServerHealth: {0}, ReqId={1}",
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
             this->OnCommonServerInfo().Broadcast(Message);
         } else if (Message.StartsWith(PrefixDecay)) {
             auto Deserialized = logic::DecaySerializer::deserialize(TCHAR_TO_UTF8(*Message));
             auto Decay = Deserialized->data();
             UE_LOGFMT(LogConnection,
                       Display,
-                      "Received Decay: {0}",
-                      FString(Deserialized->debug_string().c_str()));
+                      "Received Decay: {0}, ReqId={1}",
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
         } else {
             UE_LOGFMT(LogConnection,
                       Display,

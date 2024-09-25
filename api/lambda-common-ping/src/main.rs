@@ -7,7 +7,7 @@ use lambda_http::{run, service_fn, Error, Request, Response};
 
 fn data(now: ServerTimestamp) -> String {
     healthy_status(now)
-        .serialize()
+        .serialize(0)
         .expect("Health data should be always serializable")
 }
 
@@ -33,8 +33,9 @@ mod tests {
     fn response() {
         let now = ServerTimestamp::from_milliseconds_pure(1726219252123);
         let response = data(now.clone());
-        assert_eq!(response, "-.#QT;|ls+7m9J+");
-        let data = ServerStatus::deserialize(&response).unwrap();
+        assert_eq!(response, "-.'r4aJ:tuv)|T{7");
+        let (data, req_id) = ServerStatus::deserialize(&response).unwrap();
         assert_eq!(*data.timestamp, now);
+        assert_eq!(req_id, 0);
     }
 }
