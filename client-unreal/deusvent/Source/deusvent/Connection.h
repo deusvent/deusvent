@@ -15,8 +15,8 @@ class DEUSVENT_API UConnection : public UObject {
     void Initialize(const char *ServerAddress);
     void Connect();
     void Disconnect();
-    void SendPing() const;
-    void SendDecayQuery() const;
+    void SendPing();
+    void SendDecayQuery();
 
     DECLARE_EVENT_OneParam(UConnection, FCommonServerInfo, FString /* message::common.ServerInfo */)
         FCommonServerInfo &OnCommonServerInfo() {
@@ -27,4 +27,5 @@ class DEUSVENT_API UConnection : public UObject {
     FCommonServerInfo CommonServerInfo;
     const char *Address;
     TSharedPtr<IWebSocket> Connection;
+    uint8 RequestId;
 };

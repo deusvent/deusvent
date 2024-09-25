@@ -8,6 +8,8 @@
 //! 3) Player signed messages. Such messages are player specific and includes player identifier (public_key) and also
 //!    a signature for the payload and as a proof that player identifier is correct one
 
+use std::sync::Arc;
+
 use binary_encoding::encode_message_tag;
 
 use crate::encryption::{self, PrivateKey, PublicKey, PUBLIC_KEY_SIZE, SIGNATURE_SIZE};
@@ -48,9 +50,17 @@ impl From<binary_encoding::EncodingError> for SerializationError {
     }
 }
 
-/// Serializer for client messages
-pub struct ClientMessage;
-impl ClientMessage {
+/// Request id for the client messages. Server messages includes that so we can match it to the correct client requests
+#[derive(Debug, PartialEq, uniffi::Object)]
+pub struct RequestId(pub u8);
+
+/// Unique player identifier equal to it's generated public key
+#[derive(Debug, PartialEq, uniffi::Object)]
+pub struct PlayerId(pub String);
+
+/// Serializer for client public messages
+pub struct ClientPublicMessage;
+impl ClientPublicMessage {
     const JSON_PREFIX_START: &'static str = r#"{"k":""#;
     const JSON_PREFIX_END: &'static str = r#"","v":""#;
     const JSON_SUFFIX: &'static str = r#""}"#;
@@ -58,77 +68,118 @@ impl ClientMessage {
     fn json_prefix(tag: u16) -> String {
         format!(
             "{}{}{}",
-            ClientMessage::JSON_PREFIX_START,
+            ClientPublicMessage::JSON_PREFIX_START,
             encode_message_tag(tag),
-            ClientMessage::JSON_PREFIX_END
+            ClientPublicMessage::JSON_PREFIX_END
         )
     }
 
-    fn encode(data: &[u8], tag: u16) -> String {
-        let mut output = ClientMessage::json_prefix(tag);
+    fn encode_to_string(data: &[u8], tag: u16) -> String {
+        let mut output = ClientPublicMessage::json_prefix(tag);
         output.push_str(&binary_encoding::encode_base94(data));
-        output.push_str(ClientMessage::JSON_SUFFIX);
+        output.push_str(ClientPublicMessage::JSON_SUFFIX);
         output
     }
 
-    fn decode(data: &str, tag: u16) -> Result<Vec<u8>, SerializationError> {
-        let json_prefix = ClientMessage::json_prefix(tag);
-        if !data.starts_with(&json_prefix) || !data.ends_with(ClientMessage::JSON_SUFFIX) {
+    fn decode_from_string(data: &str, tag: u16) -> Result<Vec<u8>, SerializationError> {
+        let json_prefix = ClientPublicMessage::json_prefix(tag);
+        if !data.starts_with(&json_prefix) || !data.ends_with(ClientPublicMessage::JSON_SUFFIX) {
             return Err(SerializationError::BadData {
                 msg: "No json_prefix and json_suffix found".to_string(),
             });
         }
-        let base64_data = &data[json_prefix.len()..data.len() - ClientMessage::JSON_SUFFIX.len()];
+        let base64_data =
+            &data[json_prefix.len()..data.len() - ClientPublicMessage::JSON_SUFFIX.len()];
         let decoded_data = binary_encoding::decode_base94(base64_data)?;
         Ok(decoded_data)
     }
 
-    /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
-    /// encoded tag and "v" has an encoded payload
-    pub fn serialize(msg: &impl bincode::Encode, tag: u16) -> Result<String, SerializationError> {
-        let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
-        Ok(ClientMessage::encode(&data, tag))
+    fn encode_to_binary(
+        msg: &impl bincode::Encode,
+        request_id: u8,
+    ) -> Result<Vec<u8>, SerializationError> {
+        let config = bincode::config::standard();
+
+        // Manually pre-allocate vector with +1 capacity so that request_id would fit without reallocation along with encoded data
+        let mut size_writer = bincode::enc::write::SizeWriter::default();
+        bincode::encode_into_writer(msg, &mut size_writer, config)?;
+        let msg_size = size_writer.bytes_written;
+        let mut data = vec![0; msg_size + 1];
+
+        // Now encode the message and add request_id itself as a last byte
+        bincode::encode_into_slice(msg, &mut data, config)?;
+        data[msg_size] = request_id;
+        Ok(data)
     }
 
-    /// Deserialize JSON string back to the client message type
-    pub fn deserialize<T>(data: &str, tag: u16) -> Result<T, SerializationError>
+    fn decode_from_binary<T>(data: &[u8]) -> Result<(T, RequestId), SerializationError>
     where
         T: bincode::Decode,
     {
-        let decoded_data = ClientMessage::decode(data, tag)?;
-        let instance: T = bincode::decode_from_slice(&decoded_data, bincode::config::standard())?.0;
-        Ok(instance)
+        if data.len() < 2 {
+            return Err(SerializationError::BadData {
+                msg: "Too short data to decode".to_string(),
+            });
+        }
+        let request_id = data[data.len() - 1];
+        let payload = &data[..&data.len() - 1];
+        let instance: T = bincode::decode_from_slice(payload, bincode::config::standard())?.0;
+        Ok((instance, RequestId(request_id)))
+    }
+
+    /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
+    /// encoded tag and "v" has an encoded payload
+    pub fn serialize(
+        msg: &impl bincode::Encode,
+        tag: u16,
+        request_id: u8,
+    ) -> Result<String, SerializationError> {
+        let data = ClientPublicMessage::encode_to_binary(msg, request_id)?;
+        Ok(ClientPublicMessage::encode_to_string(&data, tag))
+    }
+
+    /// Deserialize JSON string back to the client message type
+    pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, RequestId), SerializationError>
+    where
+        T: bincode::Decode,
+    {
+        let data = ClientPublicMessage::decode_from_string(data, tag)?;
+        ClientPublicMessage::decode_from_binary(&data)
     }
 }
 
 /// Serializer for signed client messages which includes signature and player public_key identifier
-pub struct SignedClientMessage;
-impl SignedClientMessage {
+pub struct ClientPlayerMessage;
+impl ClientPlayerMessage {
     /// Serialize client message using bincode, base94 and returns JSON string where "k" field has an
     /// encoded tag and "v" has an encoded payload. Payload also includes public_key so that API
     /// can identify the player and signature to proof the public_key validity
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
+        request_id: u8,
         public_key: &PublicKey,
         private_key: &PrivateKey,
     ) -> Result<String, SerializationError> {
-        let payload = bincode::encode_to_vec(msg, bincode::config::standard())?;
-        let mut data = Vec::with_capacity(payload.len() + PUBLIC_KEY_SIZE + SIGNATURE_SIZE);
-        data.extend_from_slice(&payload);
+        let encoded_message = ClientPublicMessage::encode_to_binary(msg, request_id)?;
+        let mut data = Vec::with_capacity(encoded_message.len() + PUBLIC_KEY_SIZE + SIGNATURE_SIZE);
+        data.extend_from_slice(&encoded_message);
         data.extend_from_slice(&public_key.serialize());
         let signature = encryption::sign(&data, private_key);
         data.extend_from_slice(&signature);
-        Ok(ClientMessage::encode(&data, tag))
+        Ok(ClientPublicMessage::encode_to_string(&data, tag))
     }
 
     /// Deserialize JSON string back to the pair of client message type and a player identifier string. Returns error if
     /// payload cannot be verified and signature is wrong
-    pub fn deserialize<T>(data: &str, tag: u16) -> Result<(T, String), SerializationError>
+    pub fn deserialize<T>(
+        data: &str,
+        tag: u16,
+    ) -> Result<(T, Arc<PublicKey>, RequestId), SerializationError>
     where
         T: bincode::Decode,
     {
-        let decoded_data = ClientMessage::decode(data, tag)?;
+        let decoded_data = ClientPublicMessage::decode_from_string(data, tag)?;
         if decoded_data.len() < PUBLIC_KEY_SIZE + SIGNATURE_SIZE {
             return Err(SerializationError::BadData {
                 msg: "Too short message".to_string(),
@@ -145,8 +196,8 @@ impl SignedClientMessage {
             });
         }
         let msg_data = &decoded_data[..decoded_data.len() - SIGNATURE_SIZE - PUBLIC_KEY_SIZE];
-        let instance: T = bincode::decode_from_slice(msg_data, bincode::config::standard())?.0;
-        Ok((instance, public_key.as_string()))
+        let (instance, request_id) = ClientPublicMessage::decode_from_binary(msg_data)?;
+        Ok((instance, public_key, request_id))
     }
 }
 
@@ -196,10 +247,14 @@ mod tests {
     #[test]
     fn client_messages_serialization() {
         let msg = Ping { unused: false };
-        let data = ClientMessage::serialize(&msg, 1).unwrap();
-        assert_eq!(data, r#"{"k":"-.","v":" "}"#);
-        let got: Ping = ClientMessage::deserialize(&data, 1).unwrap();
-        assert_eq!(msg, got);
+        let data = ClientPublicMessage::serialize(&msg, 1, 1).unwrap();
+        assert_eq!(data.len(), 19);
+        assert_eq!(data, r#"{"k":"-.","v":" !"}"#);
+
+        // Ensure deserialization works
+        let got: (Ping, RequestId) = ClientPublicMessage::deserialize(&data, 1).unwrap();
+        assert_eq!(got.0, msg);
+        assert_eq!(got.1, RequestId(1));
 
         // Ensure it's valid JSON
         let _: Value = serde_json::from_slice(data.as_bytes()).unwrap();
@@ -209,29 +264,32 @@ mod tests {
     fn client_signed_message_serialization() {
         let msg = Ping { unused: false };
         let keys = encryption::generate_new_keys();
-        let data =
-            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
+        let data = ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
+            .unwrap();
 
         // Ensure it's valid JSON
         let _: Value = serde_json::from_slice(data.as_bytes()).unwrap();
 
         // We can't assert for actual data as keys are generated, but length is constant
-        assert_eq!(data.len(), 136);
-        let parsed = SignedClientMessage::deserialize::<Ping>(&data, 1).unwrap();
-        assert_eq!(msg, parsed.0);
-        assert_eq!(keys.public_key.as_string(), parsed.1);
+        assert_eq!(data.len(), 137);
+        let parsed = ClientPlayerMessage::deserialize::<Ping>(&data, 1).unwrap();
+        assert_eq!(parsed.0, msg);
+        assert_eq!(parsed.1.as_string(), keys.public_key.as_string());
+        assert_eq!(parsed.2, RequestId(1));
 
         // Signature is stable for the same content
         let data_repeat =
-            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
+            ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
+                .unwrap();
         assert_eq!(data, data_repeat);
 
         // Signature differs for different content
         let msg = Ping { unused: true };
         let data_different_msg =
-            SignedClientMessage::serialize(&msg, 1, &keys.public_key, &keys.private_key).unwrap();
+            ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
+                .unwrap();
         assert_ne!(data, data_different_msg);
-        let parsed = SignedClientMessage::deserialize::<Ping>(&data_different_msg, 1).unwrap();
+        let parsed = ClientPlayerMessage::deserialize::<Ping>(&data_different_msg, 1).unwrap();
         assert_eq!(msg, parsed.0);
     }
 
