@@ -43,6 +43,92 @@ enum class ErrorCode;
 struct SerializationError;
 enum class Status;
 
+namespace uniffi {
+    struct FfiConverterServerTimestamp;
+} // namespace uniffi
+
+struct ServerTimestamp {
+    friend uniffi::FfiConverterServerTimestamp;
+
+    ServerTimestamp() = delete;
+
+    ServerTimestamp(const ServerTimestamp &) = delete;
+    ServerTimestamp(ServerTimestamp &&) = delete;
+
+    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
+    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
+
+    ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
+
+private:
+    ServerTimestamp(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterPrivateKey;
+} // namespace uniffi
+
+struct PrivateKey {
+    friend uniffi::FfiConverterPrivateKey;
+
+    PrivateKey() = delete;
+
+    PrivateKey(const PrivateKey &) = delete;
+    PrivateKey(PrivateKey &&) = delete;
+
+    PrivateKey &operator=(const PrivateKey &) = delete;
+    PrivateKey &operator=(PrivateKey &&) = delete;
+
+    ~PrivateKey();
+    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
+    std::vector<uint8_t> serialize();
+
+private:
+    PrivateKey(void *);
+
+    void *instance;
+};
+
+
+enum class ErrorCode: int32_t {
+    kAuthenticationError = 1,
+    kSerializationError = 2,
+    kInvalidData = 3,
+    kIoError = 4,
+    kServerError = 5
+};
+
+namespace uniffi {
+    struct FfiConverterDuration;
+} // namespace uniffi
+
+struct Duration {
+    friend uniffi::FfiConverterDuration;
+
+    Duration() = delete;
+
+    Duration(const Duration &) = delete;
+    Duration(Duration &&) = delete;
+
+    Duration &operator=(const Duration &) = delete;
+    Duration &operator=(Duration &&) = delete;
+
+    ~Duration();
+    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
+    uint64_t whole_days();
+    uint64_t whole_hours();
+    uint64_t whole_minutes();
+
+private:
+    Duration(void *);
+
+    void *instance;
+};
+
 
 enum class Status: int32_t {
     kOk = 1
@@ -74,31 +160,6 @@ private:
 };
 
 namespace uniffi {
-    struct FfiConverterServerTimestamp;
-} // namespace uniffi
-
-struct ServerTimestamp {
-    friend uniffi::FfiConverterServerTimestamp;
-
-    ServerTimestamp() = delete;
-
-    ServerTimestamp(const ServerTimestamp &) = delete;
-    ServerTimestamp(ServerTimestamp &&) = delete;
-
-    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
-    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
-
-    ~ServerTimestamp();
-    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
-    std::string as_string();
-
-private:
-    ServerTimestamp(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
     struct FfiConverterPublicKey;
 } // namespace uniffi
 
@@ -125,70 +186,9 @@ private:
 };
 
 
-enum class ErrorCode: int32_t {
-    kAuthenticationError = 1,
-    kSerializationError = 2,
-    kInvalidData = 3,
-    kIoError = 4,
-    kServerError = 5
-};
-
-namespace uniffi {
-    struct FfiConverterPrivateKey;
-} // namespace uniffi
-
-struct PrivateKey {
-    friend uniffi::FfiConverterPrivateKey;
-
-    PrivateKey() = delete;
-
-    PrivateKey(const PrivateKey &) = delete;
-    PrivateKey(PrivateKey &&) = delete;
-
-    PrivateKey &operator=(const PrivateKey &) = delete;
-    PrivateKey &operator=(PrivateKey &&) = delete;
-
-    ~PrivateKey();
-    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
-    std::vector<uint8_t> serialize();
-
-private:
-    PrivateKey(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterDuration;
-} // namespace uniffi
-
-struct Duration {
-    friend uniffi::FfiConverterDuration;
-
-    Duration() = delete;
-
-    Duration(const Duration &) = delete;
-    Duration(Duration &&) = delete;
-
-    Duration &operator=(const Duration &) = delete;
-    Duration &operator=(Duration &&) = delete;
-
-    ~Duration();
-    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
-    uint64_t whole_days();
-    uint64_t whole_hours();
-    uint64_t whole_minutes();
-
-private:
-    Duration(void *);
-
-    void *instance;
-};
-
-
-struct ServerStatus {
-    std::shared_ptr<ServerTimestamp> timestamp;
-    Status status;
+struct Decay {
+    std::shared_ptr<ServerTimestamp> started_at;
+    std::shared_ptr<Duration> length;
 };
 
 
@@ -202,15 +202,9 @@ struct ServerError {
 };
 
 
-struct Decay {
-    std::shared_ptr<ServerTimestamp> started_at;
-    std::shared_ptr<Duration> length;
-};
-
-
-struct Keys {
-    std::shared_ptr<PublicKey> public_key;
-    std::shared_ptr<PrivateKey> private_key;
+struct ServerStatus {
+    std::shared_ptr<ServerTimestamp> timestamp;
+    Status status;
 };
 
 namespace uniffi {
@@ -252,6 +246,12 @@ private:
     std::variant<kEncrypted, kPlaintext> variant;
 
     SafeString();
+};
+
+
+struct Keys {
+    std::shared_ptr<PublicKey> public_key;
+    std::shared_ptr<PrivateKey> private_key;
 };
 
 

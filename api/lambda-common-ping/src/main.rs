@@ -2,39 +2,34 @@
 //! Intended to be called every N seconds by all the clients to sync time and ensure connection stays open
 
 use api_core::datetime::ServerTimestamp;
-use api_core::lambda::{run_lambda, EventHandler};
+use api_core::lambda::{run_public_handler, PublicEventHandler};
+use api_core::messages::ClientPublicMessage;
 use api_core::server_error::ServerError;
-use api_core::ApiGatewayWebsocketProxyRequest;
 use api_core::{common::health::healthy_status, messages::common::ping::Ping};
-use lambda_runtime::{Error, LambdaEvent};
+use lambda_runtime::Error;
 
 struct Handler {}
 
 fn process_message(_: Ping, request_id: u8, now: ServerTimestamp) -> Result<String, ServerError> {
     healthy_status(now)
         .serialize(0)
-        .map_err(|err| ServerError::from_serialization_error(err, Ping::message_tag(), request_id))
+        .map_err(|err| ServerError::from_serialization_error(err, Ping::tag(), request_id))
 }
 
-impl EventHandler for Handler {
-    async fn process_event(
-        &self,
-        event: LambdaEvent<ApiGatewayWebsocketProxyRequest>,
-    ) -> Result<String, ServerError> {
-        let (message, request_id) = Ping::deserialize(event.payload.body.unwrap_or_default())
-            .map_err(|err| ServerError::from_serialization_error(err, Ping::message_tag(), 0))?;
-        process_message(message, request_id, ServerTimestamp::now())
+impl PublicEventHandler<Ping> for Handler {
+    async fn process_message(&self, msg: Ping, request_id: u8) -> Result<String, ServerError> {
+        process_message(msg, request_id, ServerTimestamp::now())
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    run_lambda(&Handler {}).await
+    run_public_handler(&Handler {}).await
 }
 
 #[cfg(test)]
 mod tests {
-    use api_core::{fixtures::event_with_body, messages::common::ping::ServerStatus};
+    use api_core::messages::common::ping::ServerStatus;
 
     use super::*;
 
@@ -46,22 +41,5 @@ mod tests {
         let (data, req_id) = ServerStatus::deserialize(&response).unwrap();
         assert_eq!(*data.timestamp, now);
         assert_eq!(req_id, 0);
-    }
-
-    #[tokio::test]
-    async fn process_event_error() {
-        let event = event_with_body("bad_data".to_string());
-        let err = Handler {}.process_event(event).await.err().unwrap();
-        assert_eq!(
-            err,
-            ServerError {
-                error_code: api_core::server_error::ErrorCode::SerializationError,
-                error_description: "Data is invalid and cannot be processed".to_string(),
-                error_context: Some("Data error: No json_prefix and json_suffix found".to_string()),
-                request_id: 0,
-                message_tag: Ping::message_tag(),
-                recoverable: false
-            }
-        )
     }
 }

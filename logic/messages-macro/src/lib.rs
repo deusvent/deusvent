@@ -60,21 +60,21 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #input
 
         #[cfg(feature = "server")]
-        impl #struct_name_ident {
+        impl crate::messages::ClientPublicMessage for #struct_name_ident {
             #[doc = "Serialize underlying message to string"]
-            pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
+            fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ClientPublicMessage::serialize(&self, #message_tag, request_id)
             }
 
             #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
-            pub fn deserialize(data: String) -> Result<(Self, u8), crate::messages::serializers::SerializationError> {
+            fn deserialize(data: String) -> Result<(Self, u8), crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, u8) = crate::messages::serializers::ClientPublicMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
             }
 
             #[doc = "Return message tag"]
-            pub fn message_tag() -> u16 {
+            fn tag() -> u16 {
                 #message_tag
             }
         }
@@ -161,20 +161,20 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #input
 
         #[cfg(feature = "server")]
-        impl #struct_name_ident {
+        impl crate::messages::ClientPlayerMessage for #struct_name_ident {
             #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
-            pub fn serialize(&self, request_id: u8, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
+            fn serialize(&self, request_id: u8, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ClientPlayerMessage::serialize(&self, #message_tag, request_id, &public_key, &private_key)
             }
 
             #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
-            pub fn deserialize(data: String) -> Result<(Self, std::sync::Arc<crate::encryption::PublicKey>, u8), crate::messages::serializers::SerializationError> {
+            fn deserialize(data: String) -> Result<(Self, std::sync::Arc<crate::encryption::PublicKey>, u8), crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, std::sync::Arc<crate::encryption::PublicKey>, u8) = crate::messages::serializers::ClientPlayerMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
             }
 
             #[doc = "Return message tag"]
-            pub fn message_tag() -> u16 {
+            fn tag() -> u16 {
                 #message_tag
             }
         }

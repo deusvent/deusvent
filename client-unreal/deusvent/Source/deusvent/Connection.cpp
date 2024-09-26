@@ -11,7 +11,7 @@ DEFINE_LOG_CATEGORY(LogConnection);
 
 void UConnection::Initialize(const char *ServerAddress) {
     this->Address = ServerAddress;
-    this->RequestId = 100;
+    this->RequestId = 0;
 }
 
 void UConnection::Connect() {
@@ -43,6 +43,7 @@ void UConnection::Connect() {
         // Testing message tag and deserialization
         auto PrefixServerStatus = FString(logic::server_status_message_tag().c_str());
         auto PrefixDecay = FString(logic::decay_message_tag().c_str());
+        auto ServerError = FString(logic::server_error_message_tag().c_str());
         if (Message.StartsWith(PrefixServerStatus)) {
             auto Deserialized = logic::ServerStatusSerializer::deserialize(TCHAR_TO_UTF8(*Message));
             auto ServerHealth = Deserialized->data();
@@ -58,6 +59,15 @@ void UConnection::Connect() {
             UE_LOGFMT(LogConnection,
                       Display,
                       "Received Decay: {0}, ReqId={1}",
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
+        } else if (Message.StartsWith(ServerError)) {
+            auto Deserialized = logic::ServerErrorSerializer::deserialize(TCHAR_TO_UTF8(*Message));
+            auto Error = Deserialized->data();
+            UE_LOGFMT(LogConnection,
+                      Display,
+                      "Received ServerError={0}. Debug={0}, ReqId={1}",
+                      FString(Error.error_description.c_str()),
                       FString(Deserialized->debug_string().c_str()),
                       Deserialized->request_id());
         } else {

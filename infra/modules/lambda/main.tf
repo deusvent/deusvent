@@ -66,6 +66,10 @@ resource "aws_lambda_function" "lambda" {
   runtime          = "provided.al2023"
   source_code_hash = data.archive_file.empty.output_base64sha256
   architectures    = ["arm64"]
+  logging_config {
+    log_format = "Text"
+    log_group  = aws_cloudwatch_log_group.log_group.name
+  }
   lifecycle {
     ignore_changes = [
       source_code_hash # We deploy new version via CI, so it can be ignored

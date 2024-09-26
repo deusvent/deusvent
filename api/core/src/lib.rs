@@ -4,7 +4,6 @@
 #![deny(missing_docs)] // It's used by all API services and should be well documented
 
 // Re-export some of the functionality to simplify dependency for API lambdas
-pub use aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest;
 pub use logic::*;
 
 pub mod common;
