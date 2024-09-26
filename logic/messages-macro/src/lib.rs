@@ -72,6 +72,11 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
                 let data: (#struct_name_ident, u8) = crate::messages::serializers::ClientPublicMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
             }
+
+            #[doc = "Return message tag"]
+            pub fn message_tag() -> u16 {
+                #message_tag
+            }
         }
 
 
@@ -166,6 +171,11 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             pub fn deserialize(data: String) -> Result<(Self, std::sync::Arc<crate::encryption::PublicKey>, u8), crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, std::sync::Arc<crate::encryption::PublicKey>, u8) = crate::messages::serializers::ClientPlayerMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
+            }
+
+            #[doc = "Return message tag"]
+            pub fn message_tag() -> u16 {
+                #message_tag
             }
         }
 

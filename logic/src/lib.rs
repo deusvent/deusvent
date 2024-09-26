@@ -5,5 +5,6 @@
 pub mod datetime;
 pub mod encryption;
 pub mod messages;
+pub mod server_error;
 
 uniffi::setup_scaffolding!();

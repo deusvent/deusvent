@@ -21,6 +21,10 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_logic_checksum_func_servererror_message_tag() != 13551) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_logic_checksum_func_serverstatus_message_tag() != 55415) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
@@ -109,6 +113,22 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_logic_checksum_method_servererrorserializer_data() != 16039) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_servererrorserializer_debug_string() != 25135) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_servererrorserializer_request_id() != 30047) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_servererrorserializer_serialize() != 1802) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_logic_checksum_method_serverstatusserializer_data() != 48664) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
@@ -190,6 +210,14 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_constructor_publickey_deserialize() != 26224) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_servererrorserializer_deserialize() != 58731) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_constructor_servererrorserializer_new() != 47355) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -315,6 +343,28 @@ void FfiConverterUInt8::write(RustStream &stream, uint8_t val) {
 
 int32_t FfiConverterUInt8::allocation_size(uint8_t) {
     return static_cast<int32_t>(sizeof(uint8_t));
+}
+uint16_t FfiConverterUInt16::lift(uint16_t val) {
+    return val;
+}
+
+uint16_t FfiConverterUInt16::lower(uint16_t val) {
+    return val;
+}
+
+uint16_t FfiConverterUInt16::read(RustStream &stream) {
+    uint16_t ret;
+    stream >> ret;
+
+    return ret;
+}
+
+void FfiConverterUInt16::write(RustStream &stream, uint16_t val) {
+    stream << val;
+}
+
+int32_t FfiConverterUInt16::allocation_size(uint16_t) {
+    return static_cast<int32_t>(sizeof(uint16_t));
 }
 uint64_t FfiConverterUInt64::lift(uint64_t val) {
     return val;
@@ -705,6 +755,47 @@ PublicKey::~PublicKey() {
     uniffi::rust_call(uniffi_logic_fn_free_publickey, nullptr, this->instance);
 }
 
+ServerErrorSerializer::ServerErrorSerializer(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<ServerErrorSerializer> ServerErrorSerializer::init(const ServerError &data) {
+    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(
+        uniffi::rust_call(uniffi_logic_fn_constructor_servererrorserializer_new,
+                          nullptr,
+                          uniffi::FfiConverterTypeServerError::lower(data))));
+}
+
+std::shared_ptr<ServerErrorSerializer> ServerErrorSerializer::deserialize(const std::string &data) {
+    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(
+        uniffi::rust_call(uniffi_logic_fn_constructor_servererrorserializer_deserialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          uniffi::FfiConverterString::lower(data))));
+}
+
+ServerError ServerErrorSerializer::data() {
+    return uniffi::FfiConverterTypeServerError::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_servererrorserializer_data, nullptr, this->instance));
+}
+std::string ServerErrorSerializer::debug_string() {
+    return uniffi::FfiConverterString::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_servererrorserializer_debug_string, nullptr, this->instance));
+}
+uint8_t ServerErrorSerializer::request_id() {
+    return uniffi::FfiConverterUInt8::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_servererrorserializer_request_id, nullptr, this->instance));
+}
+std::string ServerErrorSerializer::serialize(uint8_t request_id) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_servererrorserializer_serialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          this->instance,
+                          uniffi::FfiConverterUInt8::lower(request_id)));
+}
+
+ServerErrorSerializer::~ServerErrorSerializer() {
+    uniffi::rust_call(uniffi_logic_fn_free_servererrorserializer, nullptr, this->instance);
+}
+
 ServerStatusSerializer::ServerStatusSerializer(void *ptr) : instance(ptr) {
 }
 
@@ -1042,6 +1133,32 @@ int32_t FfiConverterPublicKey::allocation_size(const std::shared_ptr<PublicKey> 
     return 8;
 }
 
+std::shared_ptr<ServerErrorSerializer> FfiConverterServerErrorSerializer::lift(void *ptr) {
+    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(ptr));
+}
+
+void *FfiConverterServerErrorSerializer::lower(const std::shared_ptr<ServerErrorSerializer> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<ServerErrorSerializer> FfiConverterServerErrorSerializer::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<ServerErrorSerializer>(
+        new ServerErrorSerializer(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterServerErrorSerializer::write(RustStream &stream,
+                                              const std::shared_ptr<ServerErrorSerializer> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t
+FfiConverterServerErrorSerializer::allocation_size(const std::shared_ptr<ServerErrorSerializer> &) {
+    return 8;
+}
+
 std::shared_ptr<ServerStatusSerializer> FfiConverterServerStatusSerializer::lift(void *ptr) {
     return std::shared_ptr<ServerStatusSerializer>(new ServerStatusSerializer(ptr));
 }
@@ -1295,6 +1412,51 @@ int32_t FfiConverterTypePing::allocation_size(const Ping &val) {
     return FfiConverterBool::allocation_size(val.unused);
 }
 
+ServerError FfiConverterTypeServerError::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeServerError::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeServerError::lower(const ServerError &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeServerError::write(stream, val);
+
+    return std::move(buf);
+}
+
+ServerError FfiConverterTypeServerError::read(RustStream &stream) {
+    return {FfiConverterTypeErrorCode::read(stream),
+            FfiConverterString::read(stream),
+            FfiConverterOptionalString::read(stream),
+            FfiConverterUInt8::read(stream),
+            FfiConverterUInt16::read(stream),
+            FfiConverterBool::read(stream)};
+}
+
+void FfiConverterTypeServerError::write(RustStream &stream, const ServerError &val) {
+    FfiConverterTypeErrorCode::write(stream, val.error_code);
+    FfiConverterString::write(stream, val.error_description);
+    FfiConverterOptionalString::write(stream, val.error_context);
+    FfiConverterUInt8::write(stream, val.request_id);
+    FfiConverterUInt16::write(stream, val.message_tag);
+    FfiConverterBool::write(stream, val.recoverable);
+}
+
+int32_t FfiConverterTypeServerError::allocation_size(const ServerError &val) {
+    return FfiConverterTypeErrorCode::allocation_size(val.error_code) +
+           FfiConverterString::allocation_size(val.error_description) +
+           FfiConverterOptionalString::allocation_size(val.error_context) +
+           FfiConverterUInt8::allocation_size(val.request_id) +
+           FfiConverterUInt16::allocation_size(val.message_tag) +
+           FfiConverterBool::allocation_size(val.recoverable);
+}
+
 ServerStatus FfiConverterTypeServerStatus::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = FfiConverterTypeServerStatus::read(stream);
@@ -1378,6 +1540,82 @@ int32_t FfiConverterTypeEncryptionError::allocation_size(const EncryptionError &
     default:
         throw std::runtime_error("Unexpected error variant");
     }
+}
+
+ErrorCode FfiConverterTypeErrorCode::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeErrorCode::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeErrorCode::lower(const ErrorCode &val) {
+    auto buf = rustbuffer_alloc(FfiConverterTypeErrorCode::allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeErrorCode::write(stream, val);
+
+    return std::move(buf);
+}
+
+ErrorCode FfiConverterTypeErrorCode::read(RustStream &stream) {
+    int32_t variant;
+    stream >> variant;
+
+    switch (variant) {
+
+    case 1:
+        return ErrorCode::kAuthenticationError;
+
+    case 2:
+        return ErrorCode::kSerializationError;
+
+    case 3:
+        return ErrorCode::kInvalidData;
+
+    case 4:
+        return ErrorCode::kIoError;
+
+    case 5:
+        return ErrorCode::kServerError;
+
+    default:
+        throw std::runtime_error("No matching ErrorCode variant");
+    }
+}
+
+void FfiConverterTypeErrorCode::write(RustStream &stream, const ErrorCode &val) {
+    switch (val) {
+
+    case ErrorCode::kAuthenticationError:
+        stream << static_cast<int32_t>(1);
+        break;
+
+    case ErrorCode::kSerializationError:
+        stream << static_cast<int32_t>(2);
+        break;
+
+    case ErrorCode::kInvalidData:
+        stream << static_cast<int32_t>(3);
+        break;
+
+    case ErrorCode::kIoError:
+        stream << static_cast<int32_t>(4);
+        break;
+
+    case ErrorCode::kServerError:
+        stream << static_cast<int32_t>(5);
+        break;
+
+    default:
+        throw std::runtime_error("No matching ErrorCode variant");
+    }
+}
+
+int32_t FfiConverterTypeErrorCode::allocation_size(const ErrorCode &) {
+    return static_cast<int32_t>(sizeof(int32_t));
 }
 
 SafeString FfiConverterTypeSafeString::lift(RustBuffer buf) {
@@ -1566,10 +1804,64 @@ int32_t FfiConverterTypeStatus::allocation_size(const Status &) {
     return static_cast<int32_t>(sizeof(int32_t));
 }
 
+std::optional<std::string> FfiConverterOptionalString::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterOptionalString::read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterOptionalString::lower(const std::optional<std::string> &val) {
+    auto buf = rustbuffer_alloc(FfiConverterOptionalString::allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterOptionalString::write(stream, val);
+
+    return buf;
+}
+
+std::optional<std::string> FfiConverterOptionalString::read(RustStream &stream) {
+    char has_value;
+
+    stream.get(has_value);
+    if (has_value) {
+        return std::make_optional(FfiConverterString::read(stream));
+    } else {
+        return std::nullopt;
+    }
+}
+
+void FfiConverterOptionalString::write(RustStream &stream,
+                                       const std::optional<std::string> &value) {
+    stream.put(static_cast<uint8_t>(!!value));
+
+    if (value) {
+        FfiConverterString::write(stream, value.value());
+    }
+}
+
+int32_t FfiConverterOptionalString::allocation_size(const std::optional<std::string> &val) {
+    int32_t ret = 1;
+
+    if (val) {
+        ret += FfiConverterString::allocation_size(val.value());
+    }
+
+    return ret;
+}
+
 } // namespace uniffi
 
 std::string decay_message_tag() {
     auto ret = uniffi::rust_call(uniffi_logic_fn_func_decay_message_tag, nullptr);
+
+    return uniffi::FfiConverterString::lift(ret);
+}
+
+std::string server_error_message_tag() {
+    auto ret = uniffi::rust_call(uniffi_logic_fn_func_servererror_message_tag, nullptr);
 
     return uniffi::FfiConverterString::lift(ret);
 }
