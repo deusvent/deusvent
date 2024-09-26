@@ -59,12 +59,34 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
         #input
 
+        #[cfg(feature = "server")]
+        impl crate::messages::ClientPublicMessage for #struct_name_ident {
+            #[doc = "Serialize underlying message to string"]
+            fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientPublicMessage::serialize(&self, #message_tag, request_id)
+            }
+
+            #[doc = "Deserialize string to the underlying message type"]
+            #[uniffi::constructor]
+            fn deserialize(data: String) -> Result<(Self, u8), crate::messages::serializers::SerializationError> {
+                let data: (#struct_name_ident, u8) = crate::messages::serializers::ClientPublicMessage::deserialize(&data, #message_tag)?;
+                Ok(data)
+            }
+
+            #[doc = "Return message tag"]
+            fn tag() -> u16 {
+                #message_tag
+            }
+        }
+
+
         // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
         // struct will be responsible for data encoding
         #[cfg(feature="uniffi")]
         #[derive(uniffi::Object)]
         struct #message_serializer {
-            data: #struct_name_ident
+            data: #struct_name_ident,
+            request_id: u8,
         }
 
         #[cfg(feature="uniffi")]
@@ -73,7 +95,7 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             #[doc = "Creates new message serializer"]
             #[uniffi::constructor]
             pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {data})
+                std::sync::Arc::new(Self {data, request_id: 0})
             }
 
             #[doc = "Returns underlying message"]
@@ -82,15 +104,15 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             }
 
             #[doc = "Serialize underlying message to string"]
-            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ClientMessage::serialize(&self.data, #message_tag)
+            pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientPublicMessage::serialize(&self.data, #message_tag, request_id)
             }
 
             #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
-                let instance: #struct_name_ident = crate::messages::serializers::ClientMessage::deserialize(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self {data: instance}))
+                let data: (#struct_name_ident, u8) = crate::messages::serializers::ClientPublicMessage::deserialize(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self {data: data.0, request_id: data.1.into()}))
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
@@ -139,16 +161,21 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #input
 
         #[cfg(feature = "server")]
-        impl #struct_name_ident {
+        impl crate::messages::ClientPlayerMessage for #struct_name_ident {
             #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
-            pub fn serialize(&self, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::SignedClientMessage::serialize(&self, #message_tag, &public_key, &private_key)
+            fn serialize(&self, request_id: u8, public_key: crate::encryption::PublicKey, private_key: crate::encryption::PrivateKey) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientPlayerMessage::serialize(&self, #message_tag, request_id, &public_key, &private_key)
             }
 
             #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
-            pub fn deserialize(data: String) -> Result<(Self, String), crate::messages::serializers::SerializationError> {
-                let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
+            fn deserialize(data: String) -> Result<(Self, std::sync::Arc<crate::encryption::PublicKey>, u8), crate::messages::serializers::SerializationError> {
+                let data: (#struct_name_ident, std::sync::Arc<crate::encryption::PublicKey>, u8) = crate::messages::serializers::ClientPlayerMessage::deserialize(&data, #message_tag)?;
                 Ok(data)
+            }
+
+            #[doc = "Return message tag"]
+            fn tag() -> u16 {
+                #message_tag
             }
         }
 
@@ -158,7 +185,8 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         #[derive(uniffi::Object)]
         struct #message_serializer {
             data: #struct_name_ident,
-            public_key: String, // TODO Not sure if that is a right thing to do
+            public_key: std::sync::Arc<crate::encryption::PublicKey>,
+            request_id: u8,
         }
 
         #[cfg(feature="uniffi")]
@@ -166,8 +194,12 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         impl #message_serializer {
             #[doc = "Creates new serializer"]
             #[uniffi::constructor]
-            pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {data, public_key: String::new()})
+            pub fn new(data: #struct_name_ident, public_key: std::sync::Arc<crate::encryption::PublicKey>) -> std::sync::Arc<Self> {
+                std::sync::Arc::new(Self {
+                    data,
+                    public_key,
+                    request_id: 0,
+                })
             }
 
             #[doc = "Returns underlying message"]
@@ -176,15 +208,23 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             }
 
             #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
-            pub fn serialize(&self, public_key: std::sync::Arc<crate::encryption::PublicKey>, private_key: std::sync::Arc<crate::encryption::PrivateKey>) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::SignedClientMessage::serialize(&self.data, #message_tag, public_key.as_ref(), private_key.as_ref())
+            pub fn serialize(&self, request_id: u8, private_key: std::sync::Arc<crate::encryption::PrivateKey>) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientPlayerMessage::serialize(&self.data, #message_tag, request_id, self.public_key.as_ref(), private_key.as_ref())
             }
 
             #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
-                let data: (#struct_name_ident, String) = crate::messages::serializers::SignedClientMessage::deserialize(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self {data: data.0, public_key: data.1}))
+                let data: (
+                    #struct_name_ident,
+                    std::sync::Arc<crate::encryption::PublicKey>,
+                    u8,
+                ) = crate::messages::serializers::ClientPlayerMessage::deserialize::<#struct_name_ident>(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self {
+                    data: data.0,
+                    public_key: data.1,
+                    request_id: data.2,
+                }))
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
@@ -242,11 +282,11 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[cfg(feature = "server")]
         impl #struct_name_ident {
             #[doc = "Serialize message to string"]
-            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ServerMessage::serialize(self, #message_tag)
+            pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ServerMessage::serialize(self, #message_tag, request_id)
             }
             #[doc = "Deserialize string back to the message type"]
-            pub fn deserialize(data: &str) -> Result<Self, crate::messages::serializers::SerializationError> {
+            pub fn deserialize(data: &str) -> Result<(Self, u8), crate::messages::serializers::SerializationError> {
                 crate::messages::serializers::ServerMessage::deserialize(data, #message_tag)
             }
         }
@@ -256,7 +296,8 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[cfg(feature="uniffi")]
         #[derive(uniffi::Object)]
         struct #message_serializer {
-            data: #struct_name_ident
+            data: #struct_name_ident,
+            request_id: u8,
         }
 
         // To avoid conflict with duplicated "serialize" function enable it only when server is turned off
@@ -267,7 +308,10 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             #[doc = "Creates new message serializer"]
             #[uniffi::constructor]
             pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {data})
+                std::sync::Arc::new(Self {
+                    data,
+                    request_id: 0,
+                })
             }
 
             #[doc = "Returns underlying message"]
@@ -277,16 +321,21 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
                 self.data.clone()
             }
 
+            #[doc = "Returns client message request identifier for which this message was created"]
+            pub fn request_id(&self) -> u8 {
+                self.request_id
+            }
+
             #[doc = "Serialize underlying message to string"]
-            pub fn serialize(&self) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ServerMessage::serialize(&self.data, #message_tag)
+            pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ServerMessage::serialize(&self.data, #message_tag, request_id)
             }
 
             #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
-                let instance: #struct_name_ident = crate::messages::serializers::ServerMessage::deserialize(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self{data: instance}))
+                let data: (#struct_name_ident, u8) = crate::messages::serializers::ServerMessage::deserialize(&data, #message_tag)?;
+                Ok(std::sync::Arc::new(Self{data: data.0, request_id: data.1}))
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]

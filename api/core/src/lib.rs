@@ -8,4 +8,6 @@ pub use logic::*;
 
 pub mod common;
 pub mod entities;
+pub mod fixtures;
+pub mod lambda;
 pub mod storage;

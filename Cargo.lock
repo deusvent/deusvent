@@ -74,10 +74,13 @@ dependencies = [
  "async-stream",
  "aws-config",
  "aws-sdk-dynamodb",
+ "aws_lambda_events",
  "futures",
+ "lambda_runtime",
  "lazy_static",
  "logic",
  "rand",
+ "serde_json",
  "tokio",
  "ulid",
 ]
@@ -1306,7 +1309,7 @@ name = "lambda-common-ping"
 version = "0.1.0"
 dependencies = [
  "api-core",
- "lambda_http",
+ "lambda_runtime",
  "tokio",
 ]
 
@@ -1315,7 +1318,7 @@ name = "lambda-game-decay"
 version = "0.1.0"
 dependencies = [
  "api-core",
- "lambda_http",
+ "lambda_runtime",
  "tokio",
 ]
 

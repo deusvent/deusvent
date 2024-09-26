@@ -24,9 +24,48 @@
 //! Encoding should be used only for message serialization for client/backend communication and should not
 //! be used in long term storages as bincode is not backward or forward compatible.
 
+use std::sync::Arc;
+
+use serializers::SerializationError;
+
+use crate::encryption::{PrivateKey, PublicKey};
+
 pub mod common;
 pub mod game;
 pub mod serializers;
+
+/// Trait for all public client messages, public meaning no authentication context is needed
+pub trait ClientPublicMessage {
+    /// Returns message tag
+    fn tag() -> u16;
+
+    /// Serialize message and request_id to string
+    fn serialize(&self, request_id: u8) -> Result<String, SerializationError>;
+
+    /// Deserialize string to message itself and request_id
+    fn deserialize(input: String) -> Result<(Self, u8), SerializationError>
+    where
+        Self: std::marker::Sized;
+}
+
+/// Trait for all client player messages, meaning it comes with authentication context
+pub trait ClientPlayerMessage {
+    /// Returns message tag
+    fn tag() -> u16;
+
+    /// Serialize message and request_id to string
+    fn serialize(
+        &self,
+        request_id: u8,
+        public_key: PublicKey,
+        private_key: PrivateKey,
+    ) -> Result<String, SerializationError>;
+
+    /// Deserialize string to message itself and request_id
+    fn deserialize(input: String) -> Result<(Self, Arc<PublicKey>, u8), SerializationError>
+    where
+        Self: std::marker::Sized;
+}
 
 #[cfg(test)]
 mod tests {

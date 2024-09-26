@@ -11,6 +11,7 @@ DEFINE_LOG_CATEGORY(LogConnection);
 
 void UConnection::Initialize(const char *ServerAddress) {
     this->Address = ServerAddress;
+    this->RequestId = 0;
 }
 
 void UConnection::Connect() {
@@ -42,21 +43,33 @@ void UConnection::Connect() {
         // Testing message tag and deserialization
         auto PrefixServerStatus = FString(logic::server_status_message_tag().c_str());
         auto PrefixDecay = FString(logic::decay_message_tag().c_str());
+        auto ServerError = FString(logic::server_error_message_tag().c_str());
         if (Message.StartsWith(PrefixServerStatus)) {
             auto Deserialized = logic::ServerStatusSerializer::deserialize(TCHAR_TO_UTF8(*Message));
             auto ServerHealth = Deserialized->data();
             UE_LOGFMT(LogConnection,
                       Display,
-                      "Received ServerHealth: {0}",
-                      FString(Deserialized->debug_string().c_str()));
+                      "Received ServerHealth: {0}, ReqId={1}",
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
             this->OnCommonServerInfo().Broadcast(Message);
         } else if (Message.StartsWith(PrefixDecay)) {
             auto Deserialized = logic::DecaySerializer::deserialize(TCHAR_TO_UTF8(*Message));
             auto Decay = Deserialized->data();
             UE_LOGFMT(LogConnection,
                       Display,
-                      "Received Decay: {0}",
-                      FString(Deserialized->debug_string().c_str()));
+                      "Received Decay: {0}, ReqId={1}",
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
+        } else if (Message.StartsWith(ServerError)) {
+            auto Deserialized = logic::ServerErrorSerializer::deserialize(TCHAR_TO_UTF8(*Message));
+            auto Error = Deserialized->data();
+            UE_LOGFMT(LogConnection,
+                      Display,
+                      "Received ServerError={0}. Debug={0}, ReqId={1}",
+                      FString(Error.error_description.c_str()),
+                      FString(Deserialized->debug_string().c_str()),
+                      Deserialized->request_id());
         } else {
             UE_LOGFMT(LogConnection,
                       Display,
@@ -83,7 +96,7 @@ void UConnection::Disconnect() {
     UE_LOGFMT(LogConnection, Display, "Disconnected");
 }
 
-void UConnection::SendPing() const {
+void UConnection::SendPing() {
     if (!Connection.IsValid()) {
         // TODO Implement proper re-connecting and queueing of messages
         UE_LOGFMT(LogConnection, Error, "Cannot send health message");
@@ -93,17 +106,18 @@ void UConnection::SendPing() const {
     // Testing sending message using new serializers
     auto Msg = logic::Ping{};
     auto Serializer = logic::PingSerializer::init(Msg);
-    auto Data = FString(Serializer->serialize().c_str());
+
+    auto Data = FString(Serializer->serialize(this->RequestId++).c_str());
     UE_LOGFMT(LogConnection, Display, "Sending Ping Data: {0}", Data);
     Connection->Send(Data);
 }
 
 // Testing sending signed authenticated message
-void UConnection::SendDecayQuery() const {
+void UConnection::SendDecayQuery() {
     auto Keys = logic::generate_new_keys();
     auto Msg = logic::DecayQuery{.unused = false};
-    auto Serializer = logic::DecayQuerySerializer::init(Msg);
-    auto Data = FString(Serializer->serialize(Keys.public_key, Keys.private_key).c_str());
+    auto Serializer = logic::DecayQuerySerializer::init(Msg, Keys.public_key);
+    auto Data = FString(Serializer->serialize(this->RequestId++, Keys.private_key).c_str());
     UE_LOGFMT(LogConnection, Display, "Sending Query Data: {0}", Data);
     Connection->Send(Data);
 }

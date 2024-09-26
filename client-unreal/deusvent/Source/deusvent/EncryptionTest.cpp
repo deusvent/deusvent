@@ -14,8 +14,8 @@ TEST_CASE_NAMED(EncryptedStringTests, "Deusvent.Encryption", "[unit]") {
         // Check that data could be decrypted after serialization/deserilization
         auto Name = logic::SafeString(logic::SafeString::kEncrypted{.data = Encrypted});
         auto Identity = logic::Identity{.name = Name};
-        auto Serializer = logic::IdentitySerializer::init(Identity);
-        auto Data = Serializer->serialize(Keys.public_key, Keys.private_key);
+        auto Serializer = logic::IdentitySerializer::init(Identity, Keys.public_key);
+        auto Data = Serializer->serialize(1, Keys.private_key);
         auto Deserialized = logic::IdentitySerializer::deserialize(Data);
         auto Got = Deserialized->data();
         auto Val = std::get<logic::SafeString::kEncrypted>(Got.name.get_variant()).data;
