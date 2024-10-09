@@ -115,7 +115,7 @@ void UConnection::SendPing() {
 // Testing sending signed authenticated message
 void UConnection::SendDecayQuery() {
     auto Keys = logic::generate_new_keys();
-    auto Msg = logic::DecayQuery{.unused = false};
+    auto Msg = logic::DecayQuery{};
     auto Serializer = logic::DecayQuerySerializer::init(Msg, Keys.public_key);
     auto Data = FString(Serializer->serialize(this->RequestId++, Keys.private_key).c_str());
     UE_LOGFMT(LogConnection, Display, "Sending Query Data: {0}", Data);

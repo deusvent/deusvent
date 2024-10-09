@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn process_message_ok() {
         let now = ServerTimestamp::from_milliseconds_pure(1726219252123);
-        let response = process_message(Ping { unused: false }, 0, now.clone()).unwrap();
+        let response = process_message(Ping {}, 0, now.clone()).unwrap();
         assert_eq!(response, "-.'r4aJ:tuv)|T{7");
         let (data, req_id) = ServerStatus::deserialize(&response).unwrap();
         assert_eq!(*data.timestamp, now);

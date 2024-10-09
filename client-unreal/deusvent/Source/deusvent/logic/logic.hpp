@@ -30,77 +30,19 @@ struct ServerErrorSerializer;
 struct ServerStatusSerializer;
 struct ServerTimestamp;
 struct SyncedTimestamp;
-struct Timestamp; 
-struct Decay; 
-struct DecayQuery; 
-struct Identity; 
-struct Keys; 
-struct Ping; 
-struct ServerError; 
+struct Timestamp;
+struct Decay;
+struct DecayQuery;
+struct Identity;
+struct Keys;
+struct Ping;
+struct ServerError;
 struct ServerStatus;
 struct EncryptionError;
 enum class ErrorCode;
+struct SafeString;
 struct SerializationError;
 enum class Status;
-
-namespace uniffi {
-    struct FfiConverterServerTimestamp;
-} // namespace uniffi
-
-struct ServerTimestamp {
-    friend uniffi::FfiConverterServerTimestamp;
-
-    ServerTimestamp() = delete;
-
-    ServerTimestamp(const ServerTimestamp &) = delete;
-    ServerTimestamp(ServerTimestamp &&) = delete;
-
-    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
-    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
-
-    ~ServerTimestamp();
-    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
-    std::string as_string();
-
-private:
-    ServerTimestamp(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterPrivateKey;
-} // namespace uniffi
-
-struct PrivateKey {
-    friend uniffi::FfiConverterPrivateKey;
-
-    PrivateKey() = delete;
-
-    PrivateKey(const PrivateKey &) = delete;
-    PrivateKey(PrivateKey &&) = delete;
-
-    PrivateKey &operator=(const PrivateKey &) = delete;
-    PrivateKey &operator=(PrivateKey &&) = delete;
-
-    ~PrivateKey();
-    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
-    std::vector<uint8_t> serialize();
-
-private:
-    PrivateKey(void *);
-
-    void *instance;
-};
-
-
-enum class ErrorCode: int32_t {
-    kAuthenticationError = 1,
-    kSerializationError = 2,
-    kInvalidData = 3,
-    kIoError = 4,
-    kServerError = 5
-};
 
 namespace uniffi {
     struct FfiConverterDuration;
@@ -125,6 +67,40 @@ struct Duration {
 
 private:
     Duration(void *);
+
+    void *instance;
+};
+
+
+enum class ErrorCode: int32_t {
+    kAuthenticationError = 1,
+    kSerializationError = 2,
+    kInvalidData = 3,
+    kIoError = 4,
+    kServerError = 5
+};
+
+namespace uniffi {
+    struct FfiConverterPrivateKey;
+} // namespace uniffi
+
+struct PrivateKey {
+    friend uniffi::FfiConverterPrivateKey;
+
+    PrivateKey() = delete;
+
+    PrivateKey(const PrivateKey &) = delete;
+    PrivateKey(PrivateKey &&) = delete;
+
+    PrivateKey &operator=(const PrivateKey &) = delete;
+    PrivateKey &operator=(PrivateKey &&) = delete;
+
+    ~PrivateKey();
+    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
+    std::vector<uint8_t> serialize();
+
+private:
+    PrivateKey(void *);
 
     void *instance;
 };
@@ -185,6 +161,31 @@ private:
     void *instance;
 };
 
+namespace uniffi {
+    struct FfiConverterServerTimestamp;
+} // namespace uniffi
+
+struct ServerTimestamp {
+    friend uniffi::FfiConverterServerTimestamp;
+
+    ServerTimestamp() = delete;
+
+    ServerTimestamp(const ServerTimestamp &) = delete;
+    ServerTimestamp(ServerTimestamp &&) = delete;
+
+    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
+    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
+
+    ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
+
+private:
+    ServerTimestamp(void *);
+
+    void *instance;
+};
+
 
 struct Decay {
     std::shared_ptr<ServerTimestamp> started_at;
@@ -199,12 +200,6 @@ struct ServerError {
     uint8_t request_id;
     uint16_t message_tag;
     bool recoverable;
-};
-
-
-struct ServerStatus {
-    std::shared_ptr<ServerTimestamp> timestamp;
-    Status status;
 };
 
 namespace uniffi {
@@ -246,6 +241,12 @@ private:
     std::variant<kEncrypted, kPlaintext> variant;
 
     SafeString();
+};
+
+
+struct ServerStatus {
+    std::shared_ptr<ServerTimestamp> timestamp;
+    Status status;
 };
 
 
@@ -508,12 +509,10 @@ private:
 
 
 struct DecayQuery {
-    bool unused;
 };
 
 
 struct Ping {
-    bool unused;
 };
 
 namespace uniffi {

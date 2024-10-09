@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn process_message_ok() {
-        let msg = DecayQuery { unused: false };
+        let msg = DecayQuery {};
         let now = ServerTimestamp::from_milliseconds_pure(10);
         let response = process_message(msg, 1, now.clone()).unwrap();
         assert_eq!(response, "-/<whrHUB6=QUX@");

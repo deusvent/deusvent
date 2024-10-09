@@ -188,7 +188,7 @@ mod tests {
     #[tokio::test]
     async fn public_handler_success() {
         let request_id = 1;
-        let event = event_with_body(Ping { unused: false }.serialize(request_id).unwrap());
+        let event = event_with_body(Ping {}.serialize(request_id).unwrap());
         let response = process_public_event(event, &HandlerSuccess {}).await;
         assert_eq!(response, "Ping=1");
     }
@@ -196,7 +196,7 @@ mod tests {
     #[tokio::test]
     async fn public_handler_error() {
         let request_id = 1;
-        let event = event_with_body(Ping { unused: false }.serialize(request_id).unwrap());
+        let event = event_with_body(Ping {}.serialize(request_id).unwrap());
         let response = process_public_event(event, &HandlerError {}).await;
         assert_eq!(response, "-0#3x]*4qc;lAjfA_`* x$/+fV,P|OaI2nLRj1&RQ*$L^a+J");
         let error = ServerError::deserialize(&response).unwrap();
@@ -239,7 +239,7 @@ mod tests {
         let request_id = 1;
         let keys = encryption::generate_new_keys();
         let event = event_with_body(
-            DecayQuery { unused: false }
+            DecayQuery {}
                 .serialize(
                     request_id,
                     keys.public_key.as_ref().clone(),
@@ -256,7 +256,7 @@ mod tests {
         let request_id = 1;
         let keys = encryption::generate_new_keys();
         let event = event_with_body(
-            DecayQuery { unused: false }
+            DecayQuery {}
                 .serialize(
                     request_id,
                     keys.public_key.as_ref().clone(),
@@ -307,7 +307,7 @@ mod tests {
         let keys1 = encryption::generate_new_keys();
         let keys2 = encryption::generate_new_keys();
         let event = event_with_body(
-            DecayQuery { unused: false }
+            DecayQuery {}
                 .serialize(
                     request_id,
                     keys1.public_key.as_ref().clone(),
