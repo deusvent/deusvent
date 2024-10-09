@@ -7,7 +7,7 @@ edition = "2021"
 lazy_static = "1.5.0"
 proc-macro2 = "1.0.86"
 quote = "1.0.37"
-syn = "2.0.77"
+syn = "2.0.79"
 binary-encoding = { path = "../binary-encoding" }
 
 [lib]
