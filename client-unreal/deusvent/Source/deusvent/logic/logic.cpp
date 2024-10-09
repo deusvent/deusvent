@@ -1286,6 +1286,7 @@ void FfiConverterTypeDecay::write(RustStream &stream, const Decay &val) {
 }
 
 int32_t FfiConverterTypeDecay::allocation_size(const Decay &val) {
+
     return FfiConverterServerTimestamp::allocation_size(val.started_at) +
            FfiConverterDuration::allocation_size(val.length);
 }
@@ -1309,15 +1310,15 @@ RustBuffer FfiConverterTypeDecayQuery::lower(const DecayQuery &val) {
 }
 
 DecayQuery FfiConverterTypeDecayQuery::read(RustStream &stream) {
-    return {FfiConverterBool::read(stream)};
+    return {};
 }
 
 void FfiConverterTypeDecayQuery::write(RustStream &stream, const DecayQuery &val) {
-    FfiConverterBool::write(stream, val.unused);
 }
 
 int32_t FfiConverterTypeDecayQuery::allocation_size(const DecayQuery &val) {
-    return FfiConverterBool::allocation_size(val.unused);
+
+    return 0;
 }
 
 Identity FfiConverterTypeIdentity::lift(RustBuffer buf) {
@@ -1347,6 +1348,7 @@ void FfiConverterTypeIdentity::write(RustStream &stream, const Identity &val) {
 }
 
 int32_t FfiConverterTypeIdentity::allocation_size(const Identity &val) {
+
     return FfiConverterTypeSafeString::allocation_size(val.name);
 }
 
@@ -1378,6 +1380,7 @@ void FfiConverterTypeKeys::write(RustStream &stream, const Keys &val) {
 }
 
 int32_t FfiConverterTypeKeys::allocation_size(const Keys &val) {
+
     return FfiConverterPublicKey::allocation_size(val.public_key) +
            FfiConverterPrivateKey::allocation_size(val.private_key);
 }
@@ -1401,15 +1404,15 @@ RustBuffer FfiConverterTypePing::lower(const Ping &val) {
 }
 
 Ping FfiConverterTypePing::read(RustStream &stream) {
-    return {FfiConverterBool::read(stream)};
+    return {};
 }
 
 void FfiConverterTypePing::write(RustStream &stream, const Ping &val) {
-    FfiConverterBool::write(stream, val.unused);
 }
 
 int32_t FfiConverterTypePing::allocation_size(const Ping &val) {
-    return FfiConverterBool::allocation_size(val.unused);
+
+    return 0;
 }
 
 ServerError FfiConverterTypeServerError::lift(RustBuffer buf) {
@@ -1449,6 +1452,7 @@ void FfiConverterTypeServerError::write(RustStream &stream, const ServerError &v
 }
 
 int32_t FfiConverterTypeServerError::allocation_size(const ServerError &val) {
+
     return FfiConverterTypeErrorCode::allocation_size(val.error_code) +
            FfiConverterString::allocation_size(val.error_description) +
            FfiConverterOptionalString::allocation_size(val.error_context) +
@@ -1485,6 +1489,7 @@ void FfiConverterTypeServerStatus::write(RustStream &stream, const ServerStatus 
 }
 
 int32_t FfiConverterTypeServerStatus::allocation_size(const ServerStatus &val) {
+
     return FfiConverterServerTimestamp::allocation_size(val.timestamp) +
            FfiConverterTypeStatus::allocation_size(val.status);
 }

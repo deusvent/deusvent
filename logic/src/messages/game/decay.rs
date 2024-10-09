@@ -17,7 +17,4 @@ pub struct Decay {
 }
 
 #[client_player_message(2)]
-pub struct DecayQuery {
-    /// Unused
-    pub unused: bool,
-}
+pub struct DecayQuery {}

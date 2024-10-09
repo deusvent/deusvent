@@ -223,7 +223,7 @@ fn decode_from_binary<T>(data: &[u8]) -> Result<(T, RequestId), SerializationErr
 where
     T: bincode::Decode,
 {
-    if data.len() < 2 {
+    if data.is_empty() {
         return Err(SerializationError::BadData {
             msg: "Too short data to decode".to_string(),
         });
@@ -249,10 +249,10 @@ mod tests {
 
     #[test]
     fn client_messages_serialization() {
-        let msg = Ping { unused: false };
+        let msg = Ping {};
         let data = ClientPublicMessage::serialize(&msg, 1, 1).unwrap();
-        assert_eq!(data.len(), 19);
-        assert_eq!(data, r#"{"k":"-.","v":" !"}"#);
+        assert_eq!(data.len(), 18);
+        assert_eq!(data, r#"{"k":"-.","v":"!"}"#);
 
         // Ensure deserialization works
         let got: (Ping, RequestId) = ClientPublicMessage::deserialize(&data, 1).unwrap();
@@ -265,7 +265,7 @@ mod tests {
 
     #[test]
     fn client_signed_message_serialization() {
-        let msg = Ping { unused: false };
+        let msg = Ping {};
         let keys = encryption::generate_new_keys();
         let data = ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
             .unwrap();
@@ -274,7 +274,7 @@ mod tests {
         let _: Value = serde_json::from_slice(data.as_bytes()).unwrap();
 
         // We can't assert for actual data as keys are generated, but length is constant
-        assert_eq!(data.len(), 137);
+        assert_eq!(data.len(), 136);
         let parsed = ClientPlayerMessage::deserialize::<Ping>(&data, 1).unwrap();
         assert_eq!(parsed.0, msg);
         assert_eq!(parsed.1.as_string(), keys.public_key.as_string());
@@ -285,15 +285,6 @@ mod tests {
             ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
                 .unwrap();
         assert_eq!(data, data_repeat);
-
-        // Signature differs for different content
-        let msg = Ping { unused: true };
-        let data_different_msg =
-            ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
-                .unwrap();
-        assert_ne!(data, data_different_msg);
-        let parsed = ClientPlayerMessage::deserialize::<Ping>(&data_different_msg, 1).unwrap();
-        assert_eq!(msg, parsed.0);
     }
 
     #[test]
