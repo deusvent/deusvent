@@ -33,7 +33,7 @@ deps() {
   cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.6.2+v0.25.0
 }
 
-# Builds everything, pass "client-unreal" to build the client or keep empty to test everything else
+# Builds everything, pass "client-unreal" to build the client or keep empty to build everything else
 build() {
   local target="$1"
 
@@ -178,3 +178,4 @@ case "$ACTION" in
     ;;
   *) usage ;;
 esac
+

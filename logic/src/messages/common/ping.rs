@@ -28,8 +28,13 @@ pub struct ServerStatus {
 
 /// Client ping message
 #[client_public_message(1)]
-pub struct Ping {
-    // HACK https://github.com/NordSecurity/uniffi-bindgen-cpp/issues/45
-    /// Unused
-    pub unused: bool,
+pub struct Ping {}
+
+#[uniffi::export]
+impl Ping {
+    /// Create new ping message
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {})
+    }
 }

@@ -33,15 +33,15 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_decayqueryserializer_data() != 33162) {
+    if (uniffi_logic_checksum_func_serialize_me() != 8171) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_decayqueryserializer_debug_string() != 47777) {
+    if (uniffi_logic_checksum_method_decayquery_debug_string() != 61579) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_decayqueryserializer_serialize() != 33971) {
+    if (uniffi_logic_checksum_method_decayquery_serialize() != 36994) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -77,27 +77,23 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_identityserializer_data() != 35595) {
+    if (uniffi_logic_checksum_method_identity_debug_string() != 60222) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_identityserializer_debug_string() != 33099) {
+    if (uniffi_logic_checksum_method_identity_serialize() != 6829) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_identityserializer_serialize() != 51396) {
+    if (uniffi_logic_checksum_method_ping_debug_string() != 20808) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_pingserializer_data() != 55445) {
+    if (uniffi_logic_checksum_method_ping_serialize() != 14360) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_pingserializer_debug_string() != 9881) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_pingserializer_serialize() != 7217) {
+    if (uniffi_logic_checksum_method_ping2_serialize() != 27235) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -110,6 +106,10 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_method_publickey_serialize() != 18621) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_serializable_serialize() != 65412) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -165,11 +165,7 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_decayqueryserializer_deserialize() != 46193) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_decayqueryserializer_new() != 28331) {
+    if (uniffi_logic_checksum_constructor_decayquery_new() != 39381) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -189,19 +185,11 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_identityserializer_deserialize() != 32642) {
+    if (uniffi_logic_checksum_constructor_ping_new() != 18958) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_identityserializer_new() != 4284) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_pingserializer_deserialize() != 44314) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_pingserializer_new() != 20928) {
+    if (uniffi_logic_checksum_constructor_ping2_new() != 24007) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -494,45 +482,29 @@ int32_t FfiConverterBytes::allocation_size(const std::vector<uint8_t> &val) {
 }
 } // namespace uniffi
 
-DecayQuerySerializer::DecayQuerySerializer(void *ptr) : instance(ptr) {
+DecayQuery::DecayQuery(void *ptr) : instance(ptr) {
 }
 
-std::shared_ptr<DecayQuerySerializer>
-DecayQuerySerializer::init(const DecayQuery &data, const std::shared_ptr<PublicKey> &public_key) {
-    return std::shared_ptr<DecayQuerySerializer>(new DecayQuerySerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_decayqueryserializer_new,
-                          nullptr,
-                          uniffi::FfiConverterTypeDecayQuery::lower(data),
-                          uniffi::FfiConverterPublicKey::lower(public_key))));
+std::shared_ptr<DecayQuery> DecayQuery::init() {
+    return std::shared_ptr<DecayQuery>(
+        new DecayQuery(uniffi::rust_call(uniffi_logic_fn_constructor_decayquery_new, nullptr)));
 }
 
-std::shared_ptr<DecayQuerySerializer> DecayQuerySerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<DecayQuerySerializer>(new DecayQuerySerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_decayqueryserializer_deserialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          uniffi::FfiConverterString::lower(data))));
-}
-
-DecayQuery DecayQuerySerializer::data() {
-    return uniffi::FfiConverterTypeDecayQuery::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_decayqueryserializer_data, nullptr, this->instance));
-}
-std::string DecayQuerySerializer::debug_string() {
-    return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_decayqueryserializer_debug_string, nullptr, this->instance));
-}
-std::string DecayQuerySerializer::serialize(uint8_t request_id,
-                                            const std::shared_ptr<PrivateKey> &private_key) {
+std::string DecayQuery::debug_string() {
     return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_decayqueryserializer_serialize,
+        uniffi::rust_call(uniffi_logic_fn_method_decayquery_debug_string, nullptr, this->instance));
+}
+std::string DecayQuery::serialize(uint8_t request_id, const Keys &keys) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_decayquery_serialize,
                           uniffi::FfiConverterTypeSerializationError::lift,
                           this->instance,
                           uniffi::FfiConverterUInt8::lower(request_id),
-                          uniffi::FfiConverterPrivateKey::lower(private_key)));
+                          uniffi::FfiConverterTypeKeys::lower(keys)));
 }
 
-DecayQuerySerializer::~DecayQuerySerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_decayqueryserializer, nullptr, this->instance);
+DecayQuery::~DecayQuery() {
+    uniffi::rust_call(uniffi_logic_fn_free_decayquery, nullptr, this->instance);
 }
 
 DecaySerializer::DecaySerializer(void *ptr) : instance(ptr) {
@@ -628,82 +600,68 @@ EncryptedString::~EncryptedString() {
     uniffi::rust_call(uniffi_logic_fn_free_encryptedstring, nullptr, this->instance);
 }
 
-IdentitySerializer::IdentitySerializer(void *ptr) : instance(ptr) {
+Identity::Identity(void *ptr) : instance(ptr) {
 }
 
-std::shared_ptr<IdentitySerializer>
-IdentitySerializer::init(const Identity &data, const std::shared_ptr<PublicKey> &public_key) {
-    return std::shared_ptr<IdentitySerializer>(new IdentitySerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_identityserializer_new,
-                          nullptr,
-                          uniffi::FfiConverterTypeIdentity::lower(data),
-                          uniffi::FfiConverterPublicKey::lower(public_key))));
-}
-
-std::shared_ptr<IdentitySerializer> IdentitySerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<IdentitySerializer>(new IdentitySerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_identityserializer_deserialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          uniffi::FfiConverterString::lower(data))));
-}
-
-Identity IdentitySerializer::data() {
-    return uniffi::FfiConverterTypeIdentity::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_identityserializer_data, nullptr, this->instance));
-}
-std::string IdentitySerializer::debug_string() {
-    return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_identityserializer_debug_string, nullptr, this->instance));
-}
-std::string IdentitySerializer::serialize(uint8_t request_id,
-                                          const std::shared_ptr<PrivateKey> &private_key) {
+std::string Identity::debug_string() {
     return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_identityserializer_serialize,
+        uniffi::rust_call(uniffi_logic_fn_method_identity_debug_string, nullptr, this->instance));
+}
+std::string Identity::serialize(uint8_t request_id, const Keys &keys) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_identity_serialize,
                           uniffi::FfiConverterTypeSerializationError::lift,
                           this->instance,
                           uniffi::FfiConverterUInt8::lower(request_id),
-                          uniffi::FfiConverterPrivateKey::lower(private_key)));
+                          uniffi::FfiConverterTypeKeys::lower(keys)));
 }
 
-IdentitySerializer::~IdentitySerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_identityserializer, nullptr, this->instance);
+Identity::~Identity() {
+    uniffi::rust_call(uniffi_logic_fn_free_identity, nullptr, this->instance);
 }
 
-PingSerializer::PingSerializer(void *ptr) : instance(ptr) {
+Ping::Ping(void *ptr) : instance(ptr) {
 }
 
-std::shared_ptr<PingSerializer> PingSerializer::init(const Ping &data) {
-    return std::shared_ptr<PingSerializer>(
-        new PingSerializer(uniffi::rust_call(uniffi_logic_fn_constructor_pingserializer_new,
-                                             nullptr,
-                                             uniffi::FfiConverterTypePing::lower(data))));
+std::shared_ptr<Ping> Ping::init() {
+    return std::shared_ptr<Ping>(
+        new Ping(uniffi::rust_call(uniffi_logic_fn_constructor_ping_new, nullptr)));
 }
 
-std::shared_ptr<PingSerializer> PingSerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<PingSerializer>(
-        new PingSerializer(uniffi::rust_call(uniffi_logic_fn_constructor_pingserializer_deserialize,
-                                             uniffi::FfiConverterTypeSerializationError::lift,
-                                             uniffi::FfiConverterString::lower(data))));
-}
-
-Ping PingSerializer::data() {
-    return uniffi::FfiConverterTypePing::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_pingserializer_data, nullptr, this->instance));
-}
-std::string PingSerializer::debug_string() {
-    return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_pingserializer_debug_string, nullptr, this->instance));
-}
-std::string PingSerializer::serialize(uint8_t request_id) {
+std::string Ping::debug_string() {
     return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_pingserializer_serialize,
+        uniffi::rust_call(uniffi_logic_fn_method_ping_debug_string, nullptr, this->instance));
+}
+std::string Ping::serialize(uint8_t request_id) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_ping_serialize,
                           uniffi::FfiConverterTypeSerializationError::lift,
                           this->instance,
                           uniffi::FfiConverterUInt8::lower(request_id)));
 }
 
-PingSerializer::~PingSerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_pingserializer, nullptr, this->instance);
+Ping::~Ping() {
+    uniffi::rust_call(uniffi_logic_fn_free_ping, nullptr, this->instance);
+}
+
+Ping2::Ping2(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<Ping2> Ping2::init() {
+    return std::shared_ptr<Ping2>(
+        new Ping2(uniffi::rust_call(uniffi_logic_fn_constructor_ping2_new, nullptr)));
+}
+
+std::string Ping2::serialize(uint8_t request_id) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_ping2_serialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          this->instance,
+                          uniffi::FfiConverterUInt8::lower(request_id)));
+}
+
+Ping2::~Ping2() {
+    uniffi::rust_call(uniffi_logic_fn_free_ping2, nullptr, this->instance);
 }
 
 PlayerId::PlayerId(void *ptr) : instance(ptr) {
@@ -753,6 +711,21 @@ std::vector<uint8_t> PublicKey::serialize() {
 
 PublicKey::~PublicKey() {
     uniffi::rust_call(uniffi_logic_fn_free_publickey, nullptr, this->instance);
+}
+
+Serializable::Serializable(void *ptr) : instance(ptr) {
+}
+
+std::string Serializable::serialize(uint8_t request_id) {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_serializable_serialize,
+                          uniffi::FfiConverterTypeSerializationError::lift,
+                          this->instance,
+                          uniffi::FfiConverterUInt8::lower(request_id)));
+}
+
+Serializable::~Serializable() {
+    uniffi::rust_call(uniffi_logic_fn_free_serializable, nullptr, this->instance);
 }
 
 ServerErrorSerializer::ServerErrorSerializer(void *ptr) : instance(ptr) {
@@ -917,29 +890,26 @@ Timestamp::~Timestamp() {
 
 namespace uniffi {
 
-std::shared_ptr<DecayQuerySerializer> FfiConverterDecayQuerySerializer::lift(void *ptr) {
-    return std::shared_ptr<DecayQuerySerializer>(new DecayQuerySerializer(ptr));
+std::shared_ptr<DecayQuery> FfiConverterDecayQuery::lift(void *ptr) {
+    return std::shared_ptr<DecayQuery>(new DecayQuery(ptr));
 }
 
-void *FfiConverterDecayQuerySerializer::lower(const std::shared_ptr<DecayQuerySerializer> &obj) {
+void *FfiConverterDecayQuery::lower(const std::shared_ptr<DecayQuery> &obj) {
     return obj->instance;
 }
 
-std::shared_ptr<DecayQuerySerializer> FfiConverterDecayQuerySerializer::read(RustStream &stream) {
+std::shared_ptr<DecayQuery> FfiConverterDecayQuery::read(RustStream &stream) {
     std::uintptr_t ptr;
     stream >> ptr;
 
-    return std::shared_ptr<DecayQuerySerializer>(
-        new DecayQuerySerializer(reinterpret_cast<void *>(ptr)));
+    return std::shared_ptr<DecayQuery>(new DecayQuery(reinterpret_cast<void *>(ptr)));
 }
 
-void FfiConverterDecayQuerySerializer::write(RustStream &stream,
-                                             const std::shared_ptr<DecayQuerySerializer> &obj) {
+void FfiConverterDecayQuery::write(RustStream &stream, const std::shared_ptr<DecayQuery> &obj) {
     stream << reinterpret_cast<std::uintptr_t>(obj->instance);
 }
 
-int32_t
-FfiConverterDecayQuerySerializer::allocation_size(const std::shared_ptr<DecayQuerySerializer> &) {
+int32_t FfiConverterDecayQuery::allocation_size(const std::shared_ptr<DecayQuery> &) {
     return 8;
 }
 
@@ -1014,53 +984,72 @@ int32_t FfiConverterEncryptedString::allocation_size(const std::shared_ptr<Encry
     return 8;
 }
 
-std::shared_ptr<IdentitySerializer> FfiConverterIdentitySerializer::lift(void *ptr) {
-    return std::shared_ptr<IdentitySerializer>(new IdentitySerializer(ptr));
+std::shared_ptr<Identity> FfiConverterIdentity::lift(void *ptr) {
+    return std::shared_ptr<Identity>(new Identity(ptr));
 }
 
-void *FfiConverterIdentitySerializer::lower(const std::shared_ptr<IdentitySerializer> &obj) {
+void *FfiConverterIdentity::lower(const std::shared_ptr<Identity> &obj) {
     return obj->instance;
 }
 
-std::shared_ptr<IdentitySerializer> FfiConverterIdentitySerializer::read(RustStream &stream) {
+std::shared_ptr<Identity> FfiConverterIdentity::read(RustStream &stream) {
     std::uintptr_t ptr;
     stream >> ptr;
 
-    return std::shared_ptr<IdentitySerializer>(
-        new IdentitySerializer(reinterpret_cast<void *>(ptr)));
+    return std::shared_ptr<Identity>(new Identity(reinterpret_cast<void *>(ptr)));
 }
 
-void FfiConverterIdentitySerializer::write(RustStream &stream,
-                                           const std::shared_ptr<IdentitySerializer> &obj) {
+void FfiConverterIdentity::write(RustStream &stream, const std::shared_ptr<Identity> &obj) {
     stream << reinterpret_cast<std::uintptr_t>(obj->instance);
 }
 
-int32_t
-FfiConverterIdentitySerializer::allocation_size(const std::shared_ptr<IdentitySerializer> &) {
+int32_t FfiConverterIdentity::allocation_size(const std::shared_ptr<Identity> &) {
     return 8;
 }
 
-std::shared_ptr<PingSerializer> FfiConverterPingSerializer::lift(void *ptr) {
-    return std::shared_ptr<PingSerializer>(new PingSerializer(ptr));
+std::shared_ptr<Ping> FfiConverterPing::lift(void *ptr) {
+    return std::shared_ptr<Ping>(new Ping(ptr));
 }
 
-void *FfiConverterPingSerializer::lower(const std::shared_ptr<PingSerializer> &obj) {
+void *FfiConverterPing::lower(const std::shared_ptr<Ping> &obj) {
     return obj->instance;
 }
 
-std::shared_ptr<PingSerializer> FfiConverterPingSerializer::read(RustStream &stream) {
+std::shared_ptr<Ping> FfiConverterPing::read(RustStream &stream) {
     std::uintptr_t ptr;
     stream >> ptr;
 
-    return std::shared_ptr<PingSerializer>(new PingSerializer(reinterpret_cast<void *>(ptr)));
+    return std::shared_ptr<Ping>(new Ping(reinterpret_cast<void *>(ptr)));
 }
 
-void FfiConverterPingSerializer::write(RustStream &stream,
-                                       const std::shared_ptr<PingSerializer> &obj) {
+void FfiConverterPing::write(RustStream &stream, const std::shared_ptr<Ping> &obj) {
     stream << reinterpret_cast<std::uintptr_t>(obj->instance);
 }
 
-int32_t FfiConverterPingSerializer::allocation_size(const std::shared_ptr<PingSerializer> &) {
+int32_t FfiConverterPing::allocation_size(const std::shared_ptr<Ping> &) {
+    return 8;
+}
+
+std::shared_ptr<Ping2> FfiConverterPing2::lift(void *ptr) {
+    return std::shared_ptr<Ping2>(new Ping2(ptr));
+}
+
+void *FfiConverterPing2::lower(const std::shared_ptr<Ping2> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<Ping2> FfiConverterPing2::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<Ping2>(new Ping2(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterPing2::write(RustStream &stream, const std::shared_ptr<Ping2> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterPing2::allocation_size(const std::shared_ptr<Ping2> &) {
     return 8;
 }
 
@@ -1130,6 +1119,29 @@ void FfiConverterPublicKey::write(RustStream &stream, const std::shared_ptr<Publ
 }
 
 int32_t FfiConverterPublicKey::allocation_size(const std::shared_ptr<PublicKey> &) {
+    return 8;
+}
+
+std::shared_ptr<Serializable> FfiConverterSerializable::lift(void *ptr) {
+    return std::shared_ptr<Serializable>(new Serializable(ptr));
+}
+
+void *FfiConverterSerializable::lower(const std::shared_ptr<Serializable> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<Serializable> FfiConverterSerializable::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<Serializable>(new Serializable(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterSerializable::write(RustStream &stream, const std::shared_ptr<Serializable> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterSerializable::allocation_size(const std::shared_ptr<Serializable> &) {
     return 8;
 }
 
@@ -1286,68 +1298,9 @@ void FfiConverterTypeDecay::write(RustStream &stream, const Decay &val) {
 }
 
 int32_t FfiConverterTypeDecay::allocation_size(const Decay &val) {
+
     return FfiConverterServerTimestamp::allocation_size(val.started_at) +
            FfiConverterDuration::allocation_size(val.length);
-}
-
-DecayQuery FfiConverterTypeDecayQuery::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypeDecayQuery::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypeDecayQuery::lower(const DecayQuery &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypeDecayQuery::write(stream, val);
-
-    return std::move(buf);
-}
-
-DecayQuery FfiConverterTypeDecayQuery::read(RustStream &stream) {
-    return {FfiConverterBool::read(stream)};
-}
-
-void FfiConverterTypeDecayQuery::write(RustStream &stream, const DecayQuery &val) {
-    FfiConverterBool::write(stream, val.unused);
-}
-
-int32_t FfiConverterTypeDecayQuery::allocation_size(const DecayQuery &val) {
-    return FfiConverterBool::allocation_size(val.unused);
-}
-
-Identity FfiConverterTypeIdentity::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypeIdentity::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypeIdentity::lower(const Identity &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypeIdentity::write(stream, val);
-
-    return std::move(buf);
-}
-
-Identity FfiConverterTypeIdentity::read(RustStream &stream) {
-    return {FfiConverterTypeSafeString::read(stream)};
-}
-
-void FfiConverterTypeIdentity::write(RustStream &stream, const Identity &val) {
-    FfiConverterTypeSafeString::write(stream, val.name);
-}
-
-int32_t FfiConverterTypeIdentity::allocation_size(const Identity &val) {
-    return FfiConverterTypeSafeString::allocation_size(val.name);
 }
 
 Keys FfiConverterTypeKeys::lift(RustBuffer buf) {
@@ -1378,38 +1331,9 @@ void FfiConverterTypeKeys::write(RustStream &stream, const Keys &val) {
 }
 
 int32_t FfiConverterTypeKeys::allocation_size(const Keys &val) {
+
     return FfiConverterPublicKey::allocation_size(val.public_key) +
            FfiConverterPrivateKey::allocation_size(val.private_key);
-}
-
-Ping FfiConverterTypePing::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypePing::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypePing::lower(const Ping &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypePing::write(stream, val);
-
-    return std::move(buf);
-}
-
-Ping FfiConverterTypePing::read(RustStream &stream) {
-    return {FfiConverterBool::read(stream)};
-}
-
-void FfiConverterTypePing::write(RustStream &stream, const Ping &val) {
-    FfiConverterBool::write(stream, val.unused);
-}
-
-int32_t FfiConverterTypePing::allocation_size(const Ping &val) {
-    return FfiConverterBool::allocation_size(val.unused);
 }
 
 ServerError FfiConverterTypeServerError::lift(RustBuffer buf) {
@@ -1449,6 +1373,7 @@ void FfiConverterTypeServerError::write(RustStream &stream, const ServerError &v
 }
 
 int32_t FfiConverterTypeServerError::allocation_size(const ServerError &val) {
+
     return FfiConverterTypeErrorCode::allocation_size(val.error_code) +
            FfiConverterString::allocation_size(val.error_description) +
            FfiConverterOptionalString::allocation_size(val.error_context) +
@@ -1485,6 +1410,7 @@ void FfiConverterTypeServerStatus::write(RustStream &stream, const ServerStatus 
 }
 
 int32_t FfiConverterTypeServerStatus::allocation_size(const ServerStatus &val) {
+
     return FfiConverterServerTimestamp::allocation_size(val.timestamp) +
            FfiConverterTypeStatus::allocation_size(val.status);
 }
@@ -1876,5 +1802,14 @@ Keys generate_new_keys() {
     auto ret = uniffi::rust_call(uniffi_logic_fn_func_generate_new_keys, nullptr);
 
     return uniffi::FfiConverterTypeKeys::lift(ret);
+}
+
+std::string serialize_me(const std::shared_ptr<Serializable> &msg, uint8_t request_id) {
+    auto ret = uniffi::rust_call(uniffi_logic_fn_func_serialize_me,
+                                 uniffi::FfiConverterTypeSerializationError::lift,
+                                 uniffi::FfiConverterSerializable::lower(msg),
+                                 uniffi::FfiConverterUInt8::lower(request_id));
+
+    return uniffi::FfiConverterString::lift(ret);
 }
 } // namespace logic

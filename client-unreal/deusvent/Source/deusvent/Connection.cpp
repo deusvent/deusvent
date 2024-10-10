@@ -9,9 +9,12 @@
 
 DEFINE_LOG_CATEGORY(LogConnection);
 
-void UConnection::Initialize(const char *ServerAddress) {
+UConnection::UConnection(const char *ServerAddress, const logic::Keys &Keys) {
     this->Address = ServerAddress;
+    this->Keys = Keys;
     this->RequestId = 0;
+    this->OnStop = FPlatformProcess::GetSynchEventFromPool(false);
+    this->OnTriggerSending = FPlatformProcess::GetSynchEventFromPool(false);
 }
 
 void UConnection::Connect() {
@@ -40,6 +43,11 @@ void UConnection::Connect() {
     });
 
     Connection->OnMessage().AddLambda([this](const FString &Message) {
+        // TODO Let's imagine we get request_id from last byte of Message
+        uint8 TempRequestId = 1;
+        auto Callback = this->Callbacks[TempRequestId];
+        Callback(Message);
+
         // Testing message tag and deserialization
         auto PrefixServerStatus = FString(logic::server_status_message_tag().c_str());
         auto PrefixDecay = FString(logic::decay_message_tag().c_str());
@@ -97,27 +105,16 @@ void UConnection::Disconnect() {
 }
 
 void UConnection::SendPing() {
-    if (!Connection.IsValid()) {
-        // TODO Implement proper re-connecting and queueing of messages
-        UE_LOGFMT(LogConnection, Error, "Cannot send health message");
-        return;
-    }
-
-    // Testing sending message using new serializers
-    auto Msg = logic::Ping{};
-    auto Serializer = logic::PingSerializer::init(Msg);
-
-    auto Data = FString(Serializer->serialize(this->RequestId++).c_str());
-    UE_LOGFMT(LogConnection, Display, "Sending Ping Data: {0}", Data);
-    Connection->Send(Data);
+    this->SendPublicMessage(logic::Ping::init());
 }
 
-// Testing sending signed authenticated message
 void UConnection::SendDecayQuery() {
-    auto Keys = logic::generate_new_keys();
-    auto Msg = logic::DecayQuery{.unused = false};
-    auto Serializer = logic::DecayQuerySerializer::init(Msg, Keys.public_key);
-    auto Data = FString(Serializer->serialize(this->RequestId++, Keys.private_key).c_str());
-    UE_LOGFMT(LogConnection, Display, "Sending Query Data: {0}", Data);
-    Connection->Send(Data);
+    this->SendPlayerMessage(logic::DecayQuery::init());
+}
+
+uint8 UConnection::NextRequestId() {
+    auto Val = this->RequestId.fetch_add(1);
+    // 0 is a special request id which API may return when request_id cannot be parsed from the
+    // incoming message. Skip it from generating to avoid any confusion
+    return Val == 0 ? this->NextRequestId() : Val;
 }

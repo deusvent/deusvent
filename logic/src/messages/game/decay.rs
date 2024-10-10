@@ -17,7 +17,13 @@ pub struct Decay {
 }
 
 #[client_player_message(2)]
-pub struct DecayQuery {
-    /// Unused
-    pub unused: bool,
+pub struct DecayQuery {}
+
+#[uniffi::export]
+impl DecayQuery {
+    /// Create new DecayQuery message
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {})
+    }
 }

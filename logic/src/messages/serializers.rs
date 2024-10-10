@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn client_messages_serialization() {
-        let msg = Ping { unused: false };
+        let msg = Ping {};
         let data = ClientPublicMessage::serialize(&msg, 1, 1).unwrap();
         assert_eq!(data.len(), 19);
         assert_eq!(data, r#"{"k":"-.","v":" !"}"#);
@@ -265,7 +265,7 @@ mod tests {
 
     #[test]
     fn client_signed_message_serialization() {
-        let msg = Ping { unused: false };
+        let msg = Ping {};
         let keys = encryption::generate_new_keys();
         let data = ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
             .unwrap();
@@ -287,7 +287,7 @@ mod tests {
         assert_eq!(data, data_repeat);
 
         // Signature differs for different content
-        let msg = Ping { unused: true };
+        let msg = Ping {};
         let data_different_msg =
             ClientPlayerMessage::serialize(&msg, 1, 1, &keys.public_key, &keys.private_key)
                 .unwrap();
