@@ -30,7 +30,7 @@ deps() {
                     aarch64-apple-darwin \
                     aarch64-linux-android
   cargo fetch
-  cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.6.2+v0.25.0
+  cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.6.3+v0.25.0
 }
 
 # Builds everything, pass "client-unreal" to build the client or keep empty to build everything else
