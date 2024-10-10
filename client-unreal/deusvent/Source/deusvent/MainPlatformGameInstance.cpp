@@ -3,7 +3,8 @@
 
 void UMainPlatformGameInstance::Init() {
     Super::Init();
-    Connection = NewObject<UConnection>(this, UConnection::StaticClass());
-    Connection->Initialize("https://api.deusvent.com");
+    // TODO Temp keys for now
+    auto Keys = logic::generate_new_keys();
+    Connection = new UConnection("https://api.deusvent.com", Keys);
     Connection->Connect();
 }
