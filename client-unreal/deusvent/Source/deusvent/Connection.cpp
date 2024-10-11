@@ -43,11 +43,6 @@ void UConnection::Connect() {
     });
 
     Connection->OnMessage().AddLambda([this](const FString &Message) {
-        // TODO Let's imagine we get request_id from last byte of Message
-        uint8 TempRequestId = 1;
-        auto Callback = this->Callbacks[TempRequestId];
-        Callback(Message);
-
         // Testing message tag and deserialization
         auto PrefixServerStatus = FString(logic::server_status_message_tag().c_str());
         auto PrefixDecay = FString(logic::decay_message_tag().c_str());

@@ -33,6 +33,9 @@ const CHAR_SET_API_GATEWAY_ROUTE: [u8; 66] = [
 /// Maximum possible message tag that we can encode
 pub const MAX_VALID_TAG: u16 = (CHAR_SET_API_GATEWAY_ROUTE.len() as u16).pow(2) - 1;
 
+/// How much request id takes in a serialized string
+pub const REQUEST_ID_LEN: usize = 2;
+
 #[derive(Debug)]
 pub enum EncodingError {
     BadData(&'static str),
@@ -74,6 +77,19 @@ pub fn encode_message_tag(mut tag: u16) -> String {
     // The order is reversed, so reverse back to ensure correct order
     result.reverse();
     String::from_utf8(result).expect("Our custom charset should always be convertible to String")
+}
+
+/// Encode request id to the string of 2 bytes
+pub fn encode_request_id(id: u8) -> String {
+    // We can't encode u8 as a valid UTF8 string if we want to represent it as a 1 byte length string
+    // So we simply encode it in the same way as tag which is guaranteed to fit into 2 bytes
+    encode_message_tag(id as u16)
+}
+
+/// Decode request id back to the original value
+pub fn decode_request_id(data: &[u8]) -> Result<u8, EncodingError> {
+    let v = decode_message_tag(data)?;
+    u8::try_from(v).map_err(|_| EncodingError::BadData("Not valid request id"))
 }
 
 /// Decodes encoded tag string back into its original tag value (u16). Expects a string of exactly 2
@@ -216,5 +232,15 @@ mod tests {
         let overhead_base94 = ((size_base94 as f32 / size_data as f32) * 100f32) as usize - 100;
         assert_eq!(overhead_base64, 33);
         assert_eq!(overhead_base94, 22);
+    }
+
+    #[test]
+    fn request_id_encode_decode() {
+        for i in 0..=u8::MAX {
+            let encoded = encode_request_id(i);
+            assert_eq!(encoded.len(), REQUEST_ID_LEN);
+            let decoded = decode_request_id(encoded.as_bytes()).unwrap();
+            assert_eq!(decoded, i);
+        }
     }
 }

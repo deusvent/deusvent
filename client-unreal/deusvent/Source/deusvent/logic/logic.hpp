@@ -44,40 +44,6 @@ struct SerializationError;
 enum class Status;
 
 namespace uniffi {
-    struct FfiConverterPrivateKey;
-} // namespace uniffi
-
-struct PrivateKey {
-    friend uniffi::FfiConverterPrivateKey;
-
-    PrivateKey() = delete;
-
-    PrivateKey(const PrivateKey &) = delete;
-    PrivateKey(PrivateKey &&) = delete;
-
-    PrivateKey &operator=(const PrivateKey &) = delete;
-    PrivateKey &operator=(PrivateKey &&) = delete;
-
-    ~PrivateKey();
-    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
-    std::vector<uint8_t> serialize();
-
-private:
-    PrivateKey(void *);
-
-    void *instance;
-};
-
-
-enum class ErrorCode: int32_t {
-    kAuthenticationError = 1,
-    kSerializationError = 2,
-    kInvalidData = 3,
-    kIoError = 4,
-    kServerError = 5
-};
-
-namespace uniffi {
     struct FfiConverterDuration;
 } // namespace uniffi
 
@@ -102,6 +68,90 @@ private:
     Duration(void *);
 
     void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterServerTimestamp;
+} // namespace uniffi
+
+struct ServerTimestamp {
+    friend uniffi::FfiConverterServerTimestamp;
+
+    ServerTimestamp() = delete;
+
+    ServerTimestamp(const ServerTimestamp &) = delete;
+    ServerTimestamp(ServerTimestamp &&) = delete;
+
+    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
+    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
+
+    ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
+
+private:
+    ServerTimestamp(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterPrivateKey;
+} // namespace uniffi
+
+struct PrivateKey {
+    friend uniffi::FfiConverterPrivateKey;
+
+    PrivateKey() = delete;
+
+    PrivateKey(const PrivateKey &) = delete;
+    PrivateKey(PrivateKey &&) = delete;
+
+    PrivateKey &operator=(const PrivateKey &) = delete;
+    PrivateKey &operator=(PrivateKey &&) = delete;
+
+    ~PrivateKey();
+    static std::shared_ptr<PrivateKey> deserialize(const std::vector<uint8_t> &data);
+    std::vector<uint8_t> serialize();
+
+private:
+    PrivateKey(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterEncryptedString;
+} // namespace uniffi
+
+struct EncryptedString {
+    friend uniffi::FfiConverterEncryptedString;
+
+    EncryptedString() = delete;
+
+    EncryptedString(const EncryptedString &) = delete;
+    EncryptedString(EncryptedString &&) = delete;
+
+    EncryptedString &operator=(const EncryptedString &) = delete;
+    EncryptedString &operator=(EncryptedString &&) = delete;
+
+    ~EncryptedString();
+    static std::shared_ptr<EncryptedString> init(const std::string &plaintext, const std::shared_ptr<PrivateKey> &private_key);
+    std::string decrypt(const std::shared_ptr<PrivateKey> &private_key);
+
+private:
+    EncryptedString(void *);
+
+    void *instance;
+};
+
+
+enum class ErrorCode: int32_t {
+    kAuthenticationError = 1,
+    kSerializationError = 2,
+    kInvalidData = 3,
+    kIoError = 4,
+    kServerError = 5
 };
 
 
@@ -135,60 +185,20 @@ private:
     void *instance;
 };
 
-namespace uniffi {
-    struct FfiConverterServerTimestamp;
-} // namespace uniffi
 
-struct ServerTimestamp {
-    friend uniffi::FfiConverterServerTimestamp;
-
-    ServerTimestamp() = delete;
-
-    ServerTimestamp(const ServerTimestamp &) = delete;
-    ServerTimestamp(ServerTimestamp &&) = delete;
-
-    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
-    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
-
-    ~ServerTimestamp();
-    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
-    std::string as_string();
-
-private:
-    ServerTimestamp(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterEncryptedString;
-} // namespace uniffi
-
-struct EncryptedString {
-    friend uniffi::FfiConverterEncryptedString;
-
-    EncryptedString() = delete;
-
-    EncryptedString(const EncryptedString &) = delete;
-    EncryptedString(EncryptedString &&) = delete;
-
-    EncryptedString &operator=(const EncryptedString &) = delete;
-    EncryptedString &operator=(EncryptedString &&) = delete;
-
-    ~EncryptedString();
-    static std::shared_ptr<EncryptedString> init(const std::string &plaintext, const std::shared_ptr<PrivateKey> &private_key);
-    std::string decrypt(const std::shared_ptr<PrivateKey> &private_key);
-
-private:
-    EncryptedString(void *);
-
-    void *instance;
+struct ServerError {
+    ErrorCode error_code;
+    std::string error_description;
+    std::optional<std::string> error_context;
+    uint8_t request_id;
+    uint16_t message_tag;
+    bool recoverable;
 };
 
 
-struct ServerStatus {
-    std::shared_ptr<ServerTimestamp> timestamp;
-    Status status;
+struct Decay {
+    std::shared_ptr<ServerTimestamp> started_at;
+    std::shared_ptr<Duration> length;
 };
 
 namespace uniffi {
@@ -233,25 +243,15 @@ private:
 };
 
 
-struct Decay {
-    std::shared_ptr<ServerTimestamp> started_at;
-    std::shared_ptr<Duration> length;
-};
-
-
-struct ServerError {
-    ErrorCode error_code;
-    std::string error_description;
-    std::optional<std::string> error_context;
-    uint8_t request_id;
-    uint16_t message_tag;
-    bool recoverable;
-};
-
-
 struct Keys {
     std::shared_ptr<PublicKey> public_key;
     std::shared_ptr<PrivateKey> private_key;
+};
+
+
+struct ServerStatus {
+    std::shared_ptr<ServerTimestamp> timestamp;
+    Status status;
 };
 
 namespace uniffi {

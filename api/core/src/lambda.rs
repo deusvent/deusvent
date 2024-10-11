@@ -198,7 +198,10 @@ mod tests {
         let request_id = 1;
         let event = event_with_body(Ping {}.serialize(request_id).unwrap());
         let response = process_public_event(event, &HandlerError {}).await;
-        assert_eq!(response, "-0#3x]*4qc;lAjfA_`* x$/+fV,P|OaI2nLRj1&RQ*$L^a+J");
+        assert_eq!(
+            response,
+            "-0-.m~#Y\u{7f}4e=3Nn^AU!PCr&Ux2p9&,y^ mVk9u%I5E!qqx0p"
+        );
         let error = ServerError::deserialize(&response).unwrap();
         assert_eq!(error.1, request_id);
         assert_eq!(
@@ -218,7 +221,7 @@ mod tests {
     async fn public_handler_bad_data() {
         let event = event_with_body("bad_data".to_string());
         let response = process_public_event(event, &HandlerError {}).await;
-        assert_eq!(response, "-0@[7v#9hc8,szzmMvunH:XN*XpO]'7z8ZJDP6e%^L8|mIjh|#{(.hecR03!-ar@9ka$5:^[9I7y9=MZ=a#fK-7F+,YXa$x!B=`C+clVaArPOT:O)V8]C");
+        assert_eq!(response, "-0--,ZCq?4CjI'UrF!;$9vZ!>x?c=)>$#TOrW+p<m<GBPerVu\u{7f}[#Tm?hirY}P H1*`u:Wf pK)1>L`u)~h~%%a?/jqeZ-c}Joqn,9CUFDL4XEw 3o_ejI9");
         let error = ServerError::deserialize(&response).unwrap();
         assert_eq!(error.1, 0);
         assert_eq!(
@@ -265,7 +268,10 @@ mod tests {
                 .unwrap(),
         );
         let response = process_player_event(event, &HandlerError {}).await;
-        assert_eq!(response, "-0#3x]*4qc;lAjfA_`* x$/+fV,P|OaI2nLRj1&RQ*$L^hR]");
+        assert_eq!(
+            response,
+            "-0-.m~#Y\u{7f}4e=3Nn^AU!PCr&Ux2p9&,y^ mVk9u%I5E!qqx3U"
+        );
         let error = ServerError::deserialize(&response).unwrap();
         assert_eq!(error.1, request_id);
         assert_eq!(
@@ -285,7 +291,7 @@ mod tests {
     async fn player_handler_bad_data() {
         let event = event_with_body("bad_data".to_string());
         let response = process_player_event(event, &HandlerError {}).await;
-        assert_eq!(response, "-0@[7v#9hc8,szzmMvunH:XN*XpO]'7z8ZJDP6e%^L8|mIjh|#{(.hecR03!-ar@9ka$5:^[9I7y9=MZ=a#fK-7F+,YXa$x!B=`C+clVaArPOT:O)V@%U");
+        assert_eq!(response, "-0--,ZCq?4CjI'UrF!;$9vZ!>x?c=)>$#TOrW+p<m<GBPerVu\u{7f}[#Tm?hirY}P H1*`u:Wf pK)1>L`u)~h~%%a?/jqeZ-c}Joqn,9CUFDL4XEw 3o_ejK~");
         let error = ServerError::deserialize(&response).unwrap();
         assert_eq!(error.1, 0);
         assert_eq!(
@@ -316,7 +322,7 @@ mod tests {
                 .unwrap(),
         );
         let response = process_player_event(event, &HandlerError {}).await;
-        assert_eq!(response, "-06:F$[V5MA6J\u{7f}xER-+EoB`ouyt.m>f\u{7f}yo/E@.{9=bBiq(!8bT.P .RcE54*f{b&o4,wRHd'sOA#kj8@,B8`gr&c ;4)WuiCf5ux");
+        assert_eq!(response, "-0--(n/@J@<AJ4[hM4;r)5s;>ar#/gc+294i_o|hN9AV ^v+_Gmp\u{7f}ngnz!7qEE[CFMfgJo`zhRR!XoFCZ$An*Hy@YIi@_B9UkzEm7");
         let error = ServerError::deserialize(&response).unwrap();
         assert_eq!(error.1, 0);
         assert_eq!(
