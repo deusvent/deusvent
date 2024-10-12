@@ -47,7 +47,7 @@ TFuture<std::variant<std::shared_ptr<ResponseType>, std::shared_ptr<logic::Serve
 UConnection::SendPublicMessage(const MessageType &Msg) {
     // Generate next requestId and queue message to be sent
     auto MsgRequestId = this->NextRequestId();
-    auto MessageData = FString(Msg->serialize(MsgRequestId).c_str());
+    auto MessageData = FString(UTF8_TO_TCHAR(Msg->serialize(MsgRequestId).c_str()));
     this->OutgoingMessages.Enqueue(MessageData);
 
     // Register callback function when server message with same requestId would come
