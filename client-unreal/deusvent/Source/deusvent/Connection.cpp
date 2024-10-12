@@ -7,6 +7,8 @@
 #include "Logging/StructuredLog.h"
 #include "logic/logic.hpp"
 
+#include <thread>
+
 DEFINE_LOG_CATEGORY(LogConnection);
 
 constexpr int32 GConnection_Closed_Normally_Code = 1000;
@@ -111,16 +113,27 @@ void UConnection::TryToSendMessages() {
 }
 
 void UConnection::Reconnect(float DelaySeconds) {
-    // TODO In unit tests there is no game world - so use std::thread + std::sleep as a workaround
-    GetWorld()->GetTimerManager().SetTimer(
-        this->ReconnectTimerHandle,
-        [this]() {
-            UE_LOGFMT(LogConnection, Display, "Reconnecting...");
-            this->Connection->Connect();
-        },
-        DelaySeconds,
-        false);
-    this->Connection->Connect();
+    if (UWorld *World = GetWorld()) {
+        World->GetTimerManager().SetTimer(
+            this->ReconnectTimerHandle,
+            [this]() {
+                UE_LOGFMT(LogConnection, Display, "Reconnecting...");
+                this->Connection->Connect();
+            },
+            DelaySeconds,
+            false);
+    } else {
+        // If GameWorld is not accessible (like in unit tests) - fallback to std::thread + sleep
+        std::thread([this, DelaySeconds]() {
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(static_cast<int>(DelaySeconds * 1000)));
+            // Get back to the main game thread
+            AsyncTask(ENamedThreads::GameThread, [this]() {
+                UE_LOGFMT(LogConnection, Display, "Reconnecting (from unit test thread)...");
+                this->Connection->Connect();
+            });
+        }).detach();
+    }
 }
 
 uint8 UConnection::NextRequestId() {
