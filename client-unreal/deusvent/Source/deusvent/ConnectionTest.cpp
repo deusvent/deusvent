@@ -7,10 +7,12 @@
 TEST_CASE_NAMED(WSConnectionTests, "Deusvent.Connection", "[unit]") {
     SECTION("SendMessages") {
         auto Keys = logic::generate_new_keys();
-        auto Connection = new UConnection("https://api.deusvent.com", Keys);
+        auto Connection = NewObject<UConnection>();
+        Connection->Init("wss://api.deusvent.com", Keys);
         auto Response =
-            Connection->SendPublicMessageAsync<logic::ServerStatusSerializer>(logic::Ping::init())
-                .Get();
+            Connection->SendPublicMessage<logic::ServerStatus>(logic::Ping::init()).Get();
+        auto Status = std::get<std::shared_ptr<logic::ServerStatus>>(Response);
+        TestEqual("Server status", Status->status(), logic::Status::kOk);
     }
 }
 #endif

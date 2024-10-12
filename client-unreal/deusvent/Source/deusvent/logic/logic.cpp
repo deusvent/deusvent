@@ -33,7 +33,23 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_logic_checksum_func_parse_request_id() != 49778) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_logic_checksum_func_serialize_me() != 8171) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_decay_debug_string() != 57020) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_decay_length() != 56226) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_decay_started_at() != 5715) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -42,22 +58,6 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_method_decayquery_serialize() != 36994) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_decayserializer_data() != 64473) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_decayserializer_debug_string() != 9727) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_decayserializer_request_id() != 11361) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_decayserializer_serialize() != 16638) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -113,35 +113,43 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_servererrorserializer_data() != 16039) {
+    if (uniffi_logic_checksum_method_servererror_debug_string() != 7814) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_servererrorserializer_debug_string() != 25135) {
+    if (uniffi_logic_checksum_method_servererror_error_code() != 13159) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_servererrorserializer_request_id() != 30047) {
+    if (uniffi_logic_checksum_method_servererror_error_context() != 17416) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_servererrorserializer_serialize() != 1802) {
+    if (uniffi_logic_checksum_method_servererror_error_description() != 52686) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_serverstatusserializer_data() != 48664) {
+    if (uniffi_logic_checksum_method_servererror_message_tag() != 6999) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_serverstatusserializer_debug_string() != 1117) {
+    if (uniffi_logic_checksum_method_servererror_recoverable() != 4637) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_serverstatusserializer_request_id() != 776) {
+    if (uniffi_logic_checksum_method_servererror_request_id() != 43868) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_serverstatusserializer_serialize() != 51972) {
+    if (uniffi_logic_checksum_method_serverstatus_debug_string() != 4100) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_serverstatus_status() != 14790) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
+    if (uniffi_logic_checksum_method_serverstatus_timestamp() != 12456) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -165,15 +173,11 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_logic_checksum_constructor_decay_deserialize() != 16798) {
+        throw std::runtime_error(
+            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_logic_checksum_constructor_decayquery_new() != 39381) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_decayserializer_deserialize() != 341) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_decayserializer_new() != 10606) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -201,19 +205,11 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_servererrorserializer_deserialize() != 58731) {
+    if (uniffi_logic_checksum_constructor_servererror_deserialize() != 44940) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_constructor_servererrorserializer_new() != 47355) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_serverstatusserializer_deserialize() != 18349) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_serverstatusserializer_new() != 54043) {
+    if (uniffi_logic_checksum_constructor_serverstatus_deserialize() != 59390) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -482,6 +478,33 @@ int32_t FfiConverterBytes::allocation_size(const std::vector<uint8_t> &val) {
 }
 } // namespace uniffi
 
+Decay::Decay(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<Decay> Decay::deserialize(const std::string &data) {
+    return std::shared_ptr<Decay>(
+        new Decay(uniffi::rust_call(uniffi_logic_fn_constructor_decay_deserialize,
+                                    uniffi::FfiConverterTypeSerializationError::lift,
+                                    uniffi::FfiConverterString::lower(data))));
+}
+
+std::string Decay::debug_string() {
+    return uniffi::FfiConverterString::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_decay_debug_string, nullptr, this->instance));
+}
+std::shared_ptr<Duration> Decay::length() {
+    return uniffi::FfiConverterDuration::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_decay_length, nullptr, this->instance));
+}
+std::shared_ptr<ServerTimestamp> Decay::started_at() {
+    return uniffi::FfiConverterServerTimestamp::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_decay_started_at, nullptr, this->instance));
+}
+
+Decay::~Decay() {
+    uniffi::rust_call(uniffi_logic_fn_free_decay, nullptr, this->instance);
+}
+
 DecayQuery::DecayQuery(void *ptr) : instance(ptr) {
 }
 
@@ -505,47 +528,6 @@ std::string DecayQuery::serialize(uint8_t request_id, const Keys &keys) {
 
 DecayQuery::~DecayQuery() {
     uniffi::rust_call(uniffi_logic_fn_free_decayquery, nullptr, this->instance);
-}
-
-DecaySerializer::DecaySerializer(void *ptr) : instance(ptr) {
-}
-
-std::shared_ptr<DecaySerializer> DecaySerializer::init(const Decay &data) {
-    return std::shared_ptr<DecaySerializer>(
-        new DecaySerializer(uniffi::rust_call(uniffi_logic_fn_constructor_decayserializer_new,
-                                              nullptr,
-                                              uniffi::FfiConverterTypeDecay::lower(data))));
-}
-
-std::shared_ptr<DecaySerializer> DecaySerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<DecaySerializer>(new DecaySerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_decayserializer_deserialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          uniffi::FfiConverterString::lower(data))));
-}
-
-Decay DecaySerializer::data() {
-    return uniffi::FfiConverterTypeDecay::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_decayserializer_data, nullptr, this->instance));
-}
-std::string DecaySerializer::debug_string() {
-    return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_decayserializer_debug_string, nullptr, this->instance));
-}
-uint8_t DecaySerializer::request_id() {
-    return uniffi::FfiConverterUInt8::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_decayserializer_request_id, nullptr, this->instance));
-}
-std::string DecaySerializer::serialize(uint8_t request_id) {
-    return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_decayserializer_serialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          this->instance,
-                          uniffi::FfiConverterUInt8::lower(request_id)));
-}
-
-DecaySerializer::~DecaySerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_decayserializer, nullptr, this->instance);
 }
 
 Duration::Duration(void *ptr) : instance(ptr) {
@@ -728,87 +710,74 @@ Serializable::~Serializable() {
     uniffi::rust_call(uniffi_logic_fn_free_serializable, nullptr, this->instance);
 }
 
-ServerErrorSerializer::ServerErrorSerializer(void *ptr) : instance(ptr) {
+ServerError::ServerError(void *ptr) : instance(ptr) {
 }
 
-std::shared_ptr<ServerErrorSerializer> ServerErrorSerializer::init(const ServerError &data) {
-    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_servererrorserializer_new,
-                          nullptr,
-                          uniffi::FfiConverterTypeServerError::lower(data))));
+std::shared_ptr<ServerError> ServerError::deserialize(const std::string &data) {
+    return std::shared_ptr<ServerError>(
+        new ServerError(uniffi::rust_call(uniffi_logic_fn_constructor_servererror_deserialize,
+                                          uniffi::FfiConverterTypeSerializationError::lift,
+                                          uniffi::FfiConverterString::lower(data))));
 }
 
-std::shared_ptr<ServerErrorSerializer> ServerErrorSerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_servererrorserializer_deserialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          uniffi::FfiConverterString::lower(data))));
-}
-
-ServerError ServerErrorSerializer::data() {
-    return uniffi::FfiConverterTypeServerError::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_servererrorserializer_data, nullptr, this->instance));
-}
-std::string ServerErrorSerializer::debug_string() {
+std::string ServerError::debug_string() {
     return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_servererrorserializer_debug_string, nullptr, this->instance));
+        uniffi_logic_fn_method_servererror_debug_string, nullptr, this->instance));
 }
-uint8_t ServerErrorSerializer::request_id() {
-    return uniffi::FfiConverterUInt8::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_servererrorserializer_request_id, nullptr, this->instance));
+ErrorCode ServerError::error_code() {
+    return uniffi::FfiConverterTypeErrorCode::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_servererror_error_code, nullptr, this->instance));
 }
-std::string ServerErrorSerializer::serialize(uint8_t request_id) {
-    return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_servererrorserializer_serialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          this->instance,
-                          uniffi::FfiConverterUInt8::lower(request_id)));
+std::optional<std::string> ServerError::error_context() {
+    return uniffi::FfiConverterOptionalString::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_servererror_error_context, nullptr, this->instance));
 }
-
-ServerErrorSerializer::~ServerErrorSerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_servererrorserializer, nullptr, this->instance);
-}
-
-ServerStatusSerializer::ServerStatusSerializer(void *ptr) : instance(ptr) {
-}
-
-std::shared_ptr<ServerStatusSerializer> ServerStatusSerializer::init(const ServerStatus &data) {
-    return std::shared_ptr<ServerStatusSerializer>(new ServerStatusSerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_serverstatusserializer_new,
-                          nullptr,
-                          uniffi::FfiConverterTypeServerStatus::lower(data))));
-}
-
-std::shared_ptr<ServerStatusSerializer>
-ServerStatusSerializer::deserialize(const std::string &data) {
-    return std::shared_ptr<ServerStatusSerializer>(new ServerStatusSerializer(
-        uniffi::rust_call(uniffi_logic_fn_constructor_serverstatusserializer_deserialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          uniffi::FfiConverterString::lower(data))));
-}
-
-ServerStatus ServerStatusSerializer::data() {
-    return uniffi::FfiConverterTypeServerStatus::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_serverstatusserializer_data, nullptr, this->instance));
-}
-std::string ServerStatusSerializer::debug_string() {
+std::string ServerError::error_description() {
     return uniffi::FfiConverterString::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_serverstatusserializer_debug_string, nullptr, this->instance));
+        uniffi_logic_fn_method_servererror_error_description, nullptr, this->instance));
 }
-uint8_t ServerStatusSerializer::request_id() {
-    return uniffi::FfiConverterUInt8::lift(uniffi::rust_call(
-        uniffi_logic_fn_method_serverstatusserializer_request_id, nullptr, this->instance));
+uint16_t ServerError::message_tag() {
+    return uniffi::FfiConverterUInt16::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_servererror_message_tag, nullptr, this->instance));
 }
-std::string ServerStatusSerializer::serialize(uint8_t request_id) {
-    return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_serverstatusserializer_serialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          this->instance,
-                          uniffi::FfiConverterUInt8::lower(request_id)));
+bool ServerError::recoverable() {
+    return uniffi::FfiConverterBool::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_servererror_recoverable, nullptr, this->instance));
+}
+uint8_t ServerError::request_id() {
+    return uniffi::FfiConverterUInt8::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_servererror_request_id, nullptr, this->instance));
 }
 
-ServerStatusSerializer::~ServerStatusSerializer() {
-    uniffi::rust_call(uniffi_logic_fn_free_serverstatusserializer, nullptr, this->instance);
+ServerError::~ServerError() {
+    uniffi::rust_call(uniffi_logic_fn_free_servererror, nullptr, this->instance);
+}
+
+ServerStatus::ServerStatus(void *ptr) : instance(ptr) {
+}
+
+std::shared_ptr<ServerStatus> ServerStatus::deserialize(const std::string &data) {
+    return std::shared_ptr<ServerStatus>(
+        new ServerStatus(uniffi::rust_call(uniffi_logic_fn_constructor_serverstatus_deserialize,
+                                           uniffi::FfiConverterTypeSerializationError::lift,
+                                           uniffi::FfiConverterString::lower(data))));
+}
+
+std::string ServerStatus::debug_string() {
+    return uniffi::FfiConverterString::lift(uniffi::rust_call(
+        uniffi_logic_fn_method_serverstatus_debug_string, nullptr, this->instance));
+}
+Status ServerStatus::status() {
+    return uniffi::FfiConverterTypeStatus::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_serverstatus_status, nullptr, this->instance));
+}
+std::shared_ptr<ServerTimestamp> ServerStatus::timestamp() {
+    return uniffi::FfiConverterServerTimestamp::lift(
+        uniffi::rust_call(uniffi_logic_fn_method_serverstatus_timestamp, nullptr, this->instance));
+}
+
+ServerStatus::~ServerStatus() {
+    uniffi::rust_call(uniffi_logic_fn_free_serverstatus, nullptr, this->instance);
 }
 
 ServerTimestamp::ServerTimestamp(void *ptr) : instance(ptr) {
@@ -890,6 +859,29 @@ Timestamp::~Timestamp() {
 
 namespace uniffi {
 
+std::shared_ptr<Decay> FfiConverterDecay::lift(void *ptr) {
+    return std::shared_ptr<Decay>(new Decay(ptr));
+}
+
+void *FfiConverterDecay::lower(const std::shared_ptr<Decay> &obj) {
+    return obj->instance;
+}
+
+std::shared_ptr<Decay> FfiConverterDecay::read(RustStream &stream) {
+    std::uintptr_t ptr;
+    stream >> ptr;
+
+    return std::shared_ptr<Decay>(new Decay(reinterpret_cast<void *>(ptr)));
+}
+
+void FfiConverterDecay::write(RustStream &stream, const std::shared_ptr<Decay> &obj) {
+    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
+}
+
+int32_t FfiConverterDecay::allocation_size(const std::shared_ptr<Decay> &) {
+    return 8;
+}
+
 std::shared_ptr<DecayQuery> FfiConverterDecayQuery::lift(void *ptr) {
     return std::shared_ptr<DecayQuery>(new DecayQuery(ptr));
 }
@@ -910,30 +902,6 @@ void FfiConverterDecayQuery::write(RustStream &stream, const std::shared_ptr<Dec
 }
 
 int32_t FfiConverterDecayQuery::allocation_size(const std::shared_ptr<DecayQuery> &) {
-    return 8;
-}
-
-std::shared_ptr<DecaySerializer> FfiConverterDecaySerializer::lift(void *ptr) {
-    return std::shared_ptr<DecaySerializer>(new DecaySerializer(ptr));
-}
-
-void *FfiConverterDecaySerializer::lower(const std::shared_ptr<DecaySerializer> &obj) {
-    return obj->instance;
-}
-
-std::shared_ptr<DecaySerializer> FfiConverterDecaySerializer::read(RustStream &stream) {
-    std::uintptr_t ptr;
-    stream >> ptr;
-
-    return std::shared_ptr<DecaySerializer>(new DecaySerializer(reinterpret_cast<void *>(ptr)));
-}
-
-void FfiConverterDecaySerializer::write(RustStream &stream,
-                                        const std::shared_ptr<DecaySerializer> &obj) {
-    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
-}
-
-int32_t FfiConverterDecaySerializer::allocation_size(const std::shared_ptr<DecaySerializer> &) {
     return 8;
 }
 
@@ -1145,57 +1113,49 @@ int32_t FfiConverterSerializable::allocation_size(const std::shared_ptr<Serializ
     return 8;
 }
 
-std::shared_ptr<ServerErrorSerializer> FfiConverterServerErrorSerializer::lift(void *ptr) {
-    return std::shared_ptr<ServerErrorSerializer>(new ServerErrorSerializer(ptr));
+std::shared_ptr<ServerError> FfiConverterServerError::lift(void *ptr) {
+    return std::shared_ptr<ServerError>(new ServerError(ptr));
 }
 
-void *FfiConverterServerErrorSerializer::lower(const std::shared_ptr<ServerErrorSerializer> &obj) {
+void *FfiConverterServerError::lower(const std::shared_ptr<ServerError> &obj) {
     return obj->instance;
 }
 
-std::shared_ptr<ServerErrorSerializer> FfiConverterServerErrorSerializer::read(RustStream &stream) {
+std::shared_ptr<ServerError> FfiConverterServerError::read(RustStream &stream) {
     std::uintptr_t ptr;
     stream >> ptr;
 
-    return std::shared_ptr<ServerErrorSerializer>(
-        new ServerErrorSerializer(reinterpret_cast<void *>(ptr)));
+    return std::shared_ptr<ServerError>(new ServerError(reinterpret_cast<void *>(ptr)));
 }
 
-void FfiConverterServerErrorSerializer::write(RustStream &stream,
-                                              const std::shared_ptr<ServerErrorSerializer> &obj) {
+void FfiConverterServerError::write(RustStream &stream, const std::shared_ptr<ServerError> &obj) {
     stream << reinterpret_cast<std::uintptr_t>(obj->instance);
 }
 
-int32_t
-FfiConverterServerErrorSerializer::allocation_size(const std::shared_ptr<ServerErrorSerializer> &) {
+int32_t FfiConverterServerError::allocation_size(const std::shared_ptr<ServerError> &) {
     return 8;
 }
 
-std::shared_ptr<ServerStatusSerializer> FfiConverterServerStatusSerializer::lift(void *ptr) {
-    return std::shared_ptr<ServerStatusSerializer>(new ServerStatusSerializer(ptr));
+std::shared_ptr<ServerStatus> FfiConverterServerStatus::lift(void *ptr) {
+    return std::shared_ptr<ServerStatus>(new ServerStatus(ptr));
 }
 
-void *
-FfiConverterServerStatusSerializer::lower(const std::shared_ptr<ServerStatusSerializer> &obj) {
+void *FfiConverterServerStatus::lower(const std::shared_ptr<ServerStatus> &obj) {
     return obj->instance;
 }
 
-std::shared_ptr<ServerStatusSerializer>
-FfiConverterServerStatusSerializer::read(RustStream &stream) {
+std::shared_ptr<ServerStatus> FfiConverterServerStatus::read(RustStream &stream) {
     std::uintptr_t ptr;
     stream >> ptr;
 
-    return std::shared_ptr<ServerStatusSerializer>(
-        new ServerStatusSerializer(reinterpret_cast<void *>(ptr)));
+    return std::shared_ptr<ServerStatus>(new ServerStatus(reinterpret_cast<void *>(ptr)));
 }
 
-void FfiConverterServerStatusSerializer::write(RustStream &stream,
-                                               const std::shared_ptr<ServerStatusSerializer> &obj) {
+void FfiConverterServerStatus::write(RustStream &stream, const std::shared_ptr<ServerStatus> &obj) {
     stream << reinterpret_cast<std::uintptr_t>(obj->instance);
 }
 
-int32_t FfiConverterServerStatusSerializer::allocation_size(
-    const std::shared_ptr<ServerStatusSerializer> &) {
+int32_t FfiConverterServerStatus::allocation_size(const std::shared_ptr<ServerStatus> &) {
     return 8;
 }
 
@@ -1270,39 +1230,6 @@ int32_t FfiConverterTimestamp::allocation_size(const std::shared_ptr<Timestamp> 
     return 8;
 }
 
-Decay FfiConverterTypeDecay::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypeDecay::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypeDecay::lower(const Decay &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypeDecay::write(stream, val);
-
-    return std::move(buf);
-}
-
-Decay FfiConverterTypeDecay::read(RustStream &stream) {
-    return {FfiConverterServerTimestamp::read(stream), FfiConverterDuration::read(stream)};
-}
-
-void FfiConverterTypeDecay::write(RustStream &stream, const Decay &val) {
-    FfiConverterServerTimestamp::write(stream, val.started_at);
-    FfiConverterDuration::write(stream, val.length);
-}
-
-int32_t FfiConverterTypeDecay::allocation_size(const Decay &val) {
-
-    return FfiConverterServerTimestamp::allocation_size(val.started_at) +
-           FfiConverterDuration::allocation_size(val.length);
-}
-
 Keys FfiConverterTypeKeys::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = FfiConverterTypeKeys::read(stream);
@@ -1334,85 +1261,6 @@ int32_t FfiConverterTypeKeys::allocation_size(const Keys &val) {
 
     return FfiConverterPublicKey::allocation_size(val.public_key) +
            FfiConverterPrivateKey::allocation_size(val.private_key);
-}
-
-ServerError FfiConverterTypeServerError::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypeServerError::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypeServerError::lower(const ServerError &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypeServerError::write(stream, val);
-
-    return std::move(buf);
-}
-
-ServerError FfiConverterTypeServerError::read(RustStream &stream) {
-    return {FfiConverterTypeErrorCode::read(stream),
-            FfiConverterString::read(stream),
-            FfiConverterOptionalString::read(stream),
-            FfiConverterUInt8::read(stream),
-            FfiConverterUInt16::read(stream),
-            FfiConverterBool::read(stream)};
-}
-
-void FfiConverterTypeServerError::write(RustStream &stream, const ServerError &val) {
-    FfiConverterTypeErrorCode::write(stream, val.error_code);
-    FfiConverterString::write(stream, val.error_description);
-    FfiConverterOptionalString::write(stream, val.error_context);
-    FfiConverterUInt8::write(stream, val.request_id);
-    FfiConverterUInt16::write(stream, val.message_tag);
-    FfiConverterBool::write(stream, val.recoverable);
-}
-
-int32_t FfiConverterTypeServerError::allocation_size(const ServerError &val) {
-
-    return FfiConverterTypeErrorCode::allocation_size(val.error_code) +
-           FfiConverterString::allocation_size(val.error_description) +
-           FfiConverterOptionalString::allocation_size(val.error_context) +
-           FfiConverterUInt8::allocation_size(val.request_id) +
-           FfiConverterUInt16::allocation_size(val.message_tag) +
-           FfiConverterBool::allocation_size(val.recoverable);
-}
-
-ServerStatus FfiConverterTypeServerStatus::lift(RustBuffer buf) {
-    auto stream = RustStream(&buf);
-    auto ret = FfiConverterTypeServerStatus::read(stream);
-
-    rustbuffer_free(buf);
-
-    return std::move(ret);
-}
-
-RustBuffer FfiConverterTypeServerStatus::lower(const ServerStatus &val) {
-    auto buf = rustbuffer_alloc(allocation_size(val));
-    auto stream = RustStream(&buf);
-
-    FfiConverterTypeServerStatus::write(stream, val);
-
-    return std::move(buf);
-}
-
-ServerStatus FfiConverterTypeServerStatus::read(RustStream &stream) {
-    return {FfiConverterServerTimestamp::read(stream), FfiConverterTypeStatus::read(stream)};
-}
-
-void FfiConverterTypeServerStatus::write(RustStream &stream, const ServerStatus &val) {
-    FfiConverterServerTimestamp::write(stream, val.timestamp);
-    FfiConverterTypeStatus::write(stream, val.status);
-}
-
-int32_t FfiConverterTypeServerStatus::allocation_size(const ServerStatus &val) {
-
-    return FfiConverterServerTimestamp::allocation_size(val.timestamp) +
-           FfiConverterTypeStatus::allocation_size(val.status);
 }
 
 std::unique_ptr<EncryptionError> FfiConverterTypeEncryptionError::lift(RustBuffer buf) {
@@ -1802,6 +1650,13 @@ Keys generate_new_keys() {
     auto ret = uniffi::rust_call(uniffi_logic_fn_func_generate_new_keys, nullptr);
 
     return uniffi::FfiConverterTypeKeys::lift(ret);
+}
+
+uint8_t parse_request_id(const std::string &data) {
+    auto ret = uniffi::rust_call(
+        uniffi_logic_fn_func_parse_request_id, nullptr, uniffi::FfiConverterString::lower(data));
+
+    return uniffi::FfiConverterUInt8::lift(ret);
 }
 
 std::string serialize_me(const std::shared_ptr<Serializable> &msg, uint8_t request_id) {

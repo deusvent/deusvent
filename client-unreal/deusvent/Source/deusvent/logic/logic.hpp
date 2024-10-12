@@ -17,8 +17,8 @@
 #include "logic_scaffolding.hpp"
 
 namespace logic {
+struct Decay;
 struct DecayQuery;
-struct DecaySerializer;
 struct Duration;
 struct EncryptedString;
 struct Identity;
@@ -28,15 +28,12 @@ struct PlayerId;
 struct PrivateKey;
 struct PublicKey;
 struct Serializable;
-struct ServerErrorSerializer;
-struct ServerStatusSerializer;
+struct ServerError;
+struct ServerStatus;
 struct ServerTimestamp;
 struct SyncedTimestamp;
 struct Timestamp;
-struct Decay;
 struct Keys;
-struct ServerError;
-struct ServerStatus;
 struct EncryptionError;
 enum class ErrorCode;
 struct SafeString;
@@ -44,53 +41,27 @@ struct SerializationError;
 enum class Status;
 
 namespace uniffi {
-    struct FfiConverterDuration;
+    struct FfiConverterPublicKey;
 } // namespace uniffi
 
-struct Duration {
-    friend uniffi::FfiConverterDuration;
+struct PublicKey {
+    friend uniffi::FfiConverterPublicKey;
 
-    Duration() = delete;
+    PublicKey() = delete;
 
-    Duration(const Duration &) = delete;
-    Duration(Duration &&) = delete;
+    PublicKey(const PublicKey &) = delete;
+    PublicKey(PublicKey &&) = delete;
 
-    Duration &operator=(const Duration &) = delete;
-    Duration &operator=(Duration &&) = delete;
+    PublicKey &operator=(const PublicKey &) = delete;
+    PublicKey &operator=(PublicKey &&) = delete;
 
-    ~Duration();
-    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
-    uint64_t whole_days();
-    uint64_t whole_hours();
-    uint64_t whole_minutes();
-
-private:
-    Duration(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterServerTimestamp;
-} // namespace uniffi
-
-struct ServerTimestamp {
-    friend uniffi::FfiConverterServerTimestamp;
-
-    ServerTimestamp() = delete;
-
-    ServerTimestamp(const ServerTimestamp &) = delete;
-    ServerTimestamp(ServerTimestamp &&) = delete;
-
-    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
-    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
-
-    ~ServerTimestamp();
-    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    ~PublicKey();
+    static std::shared_ptr<PublicKey> deserialize(const std::vector<uint8_t> &data);
     std::string as_string();
+    std::vector<uint8_t> serialize();
 
 private:
-    ServerTimestamp(void *);
+    PublicKey(void *);
 
     void *instance;
 };
@@ -146,59 +117,9 @@ private:
 };
 
 
-enum class ErrorCode: int32_t {
-    kAuthenticationError = 1,
-    kSerializationError = 2,
-    kInvalidData = 3,
-    kIoError = 4,
-    kServerError = 5
-};
-
-
-enum class Status: int32_t {
-    kOk = 1
-};
-
-namespace uniffi {
-    struct FfiConverterPublicKey;
-} // namespace uniffi
-
-struct PublicKey {
-    friend uniffi::FfiConverterPublicKey;
-
-    PublicKey() = delete;
-
-    PublicKey(const PublicKey &) = delete;
-    PublicKey(PublicKey &&) = delete;
-
-    PublicKey &operator=(const PublicKey &) = delete;
-    PublicKey &operator=(PublicKey &&) = delete;
-
-    ~PublicKey();
-    static std::shared_ptr<PublicKey> deserialize(const std::vector<uint8_t> &data);
-    std::string as_string();
-    std::vector<uint8_t> serialize();
-
-private:
-    PublicKey(void *);
-
-    void *instance;
-};
-
-
-struct ServerError {
-    ErrorCode error_code;
-    std::string error_description;
-    std::optional<std::string> error_context;
-    uint8_t request_id;
-    uint16_t message_tag;
-    bool recoverable;
-};
-
-
-struct Decay {
-    std::shared_ptr<ServerTimestamp> started_at;
-    std::shared_ptr<Duration> length;
+struct Keys {
+    std::shared_ptr<PublicKey> public_key;
+    std::shared_ptr<PrivateKey> private_key;
 };
 
 namespace uniffi {
@@ -242,16 +163,31 @@ private:
     SafeString();
 };
 
+namespace uniffi {
+    struct FfiConverterDecay;
+} // namespace uniffi
 
-struct Keys {
-    std::shared_ptr<PublicKey> public_key;
-    std::shared_ptr<PrivateKey> private_key;
-};
+struct Decay {
+    friend uniffi::FfiConverterDecay;
 
+    Decay() = delete;
 
-struct ServerStatus {
-    std::shared_ptr<ServerTimestamp> timestamp;
-    Status status;
+    Decay(const Decay &) = delete;
+    Decay(Decay &&) = delete;
+
+    Decay &operator=(const Decay &) = delete;
+    Decay &operator=(Decay &&) = delete;
+
+    ~Decay();
+    static std::shared_ptr<Decay> deserialize(const std::string &data);
+    std::string debug_string();
+    std::shared_ptr<Duration> length();
+    std::shared_ptr<ServerTimestamp> started_at();
+
+private:
+    Decay(void *);
+
+    void *instance;
 };
 
 namespace uniffi {
@@ -281,30 +217,28 @@ private:
 };
 
 namespace uniffi {
-    struct FfiConverterDecaySerializer;
+    struct FfiConverterDuration;
 } // namespace uniffi
 
-struct DecaySerializer {
-    friend uniffi::FfiConverterDecaySerializer;
+struct Duration {
+    friend uniffi::FfiConverterDuration;
 
-    DecaySerializer() = delete;
+    Duration() = delete;
 
-    DecaySerializer(const DecaySerializer &) = delete;
-    DecaySerializer(DecaySerializer &&) = delete;
+    Duration(const Duration &) = delete;
+    Duration(Duration &&) = delete;
 
-    DecaySerializer &operator=(const DecaySerializer &) = delete;
-    DecaySerializer &operator=(DecaySerializer &&) = delete;
+    Duration &operator=(const Duration &) = delete;
+    Duration &operator=(Duration &&) = delete;
 
-    ~DecaySerializer();
-    static std::shared_ptr<DecaySerializer> init(const Decay &data);
-    static std::shared_ptr<DecaySerializer> deserialize(const std::string &data);
-    Decay data();
-    std::string debug_string();
-    uint8_t request_id();
-    std::string serialize(uint8_t request_id);
+    ~Duration();
+    static std::shared_ptr<Duration> from_milliseconds(uint64_t milliseconds);
+    uint64_t whole_days();
+    uint64_t whole_hours();
+    uint64_t whole_minutes();
 
 private:
-    DecaySerializer(void *);
+    Duration(void *);
 
     void *instance;
 };
@@ -433,59 +367,84 @@ private:
 };
 
 namespace uniffi {
-    struct FfiConverterServerErrorSerializer;
+    struct FfiConverterServerError;
 } // namespace uniffi
 
-struct ServerErrorSerializer {
-    friend uniffi::FfiConverterServerErrorSerializer;
+struct ServerError {
+    friend uniffi::FfiConverterServerError;
 
-    ServerErrorSerializer() = delete;
+    ServerError() = delete;
 
-    ServerErrorSerializer(const ServerErrorSerializer &) = delete;
-    ServerErrorSerializer(ServerErrorSerializer &&) = delete;
+    ServerError(const ServerError &) = delete;
+    ServerError(ServerError &&) = delete;
 
-    ServerErrorSerializer &operator=(const ServerErrorSerializer &) = delete;
-    ServerErrorSerializer &operator=(ServerErrorSerializer &&) = delete;
+    ServerError &operator=(const ServerError &) = delete;
+    ServerError &operator=(ServerError &&) = delete;
 
-    ~ServerErrorSerializer();
-    static std::shared_ptr<ServerErrorSerializer> init(const ServerError &data);
-    static std::shared_ptr<ServerErrorSerializer> deserialize(const std::string &data);
-    ServerError data();
+    ~ServerError();
+    static std::shared_ptr<ServerError> deserialize(const std::string &data);
     std::string debug_string();
+    ErrorCode error_code();
+    std::optional<std::string> error_context();
+    std::string error_description();
+    uint16_t message_tag();
+    bool recoverable();
     uint8_t request_id();
-    std::string serialize(uint8_t request_id);
 
 private:
-    ServerErrorSerializer(void *);
+    ServerError(void *);
 
     void *instance;
 };
 
 namespace uniffi {
-    struct FfiConverterServerStatusSerializer;
+    struct FfiConverterServerStatus;
 } // namespace uniffi
 
-struct ServerStatusSerializer {
-    friend uniffi::FfiConverterServerStatusSerializer;
+struct ServerStatus {
+    friend uniffi::FfiConverterServerStatus;
 
-    ServerStatusSerializer() = delete;
+    ServerStatus() = delete;
 
-    ServerStatusSerializer(const ServerStatusSerializer &) = delete;
-    ServerStatusSerializer(ServerStatusSerializer &&) = delete;
+    ServerStatus(const ServerStatus &) = delete;
+    ServerStatus(ServerStatus &&) = delete;
 
-    ServerStatusSerializer &operator=(const ServerStatusSerializer &) = delete;
-    ServerStatusSerializer &operator=(ServerStatusSerializer &&) = delete;
+    ServerStatus &operator=(const ServerStatus &) = delete;
+    ServerStatus &operator=(ServerStatus &&) = delete;
 
-    ~ServerStatusSerializer();
-    static std::shared_ptr<ServerStatusSerializer> init(const ServerStatus &data);
-    static std::shared_ptr<ServerStatusSerializer> deserialize(const std::string &data);
-    ServerStatus data();
+    ~ServerStatus();
+    static std::shared_ptr<ServerStatus> deserialize(const std::string &data);
     std::string debug_string();
-    uint8_t request_id();
-    std::string serialize(uint8_t request_id);
+    Status status();
+    std::shared_ptr<ServerTimestamp> timestamp();
 
 private:
-    ServerStatusSerializer(void *);
+    ServerStatus(void *);
+
+    void *instance;
+};
+
+namespace uniffi {
+    struct FfiConverterServerTimestamp;
+} // namespace uniffi
+
+struct ServerTimestamp {
+    friend uniffi::FfiConverterServerTimestamp;
+
+    ServerTimestamp() = delete;
+
+    ServerTimestamp(const ServerTimestamp &) = delete;
+    ServerTimestamp(ServerTimestamp &&) = delete;
+
+    ServerTimestamp &operator=(const ServerTimestamp &) = delete;
+    ServerTimestamp &operator=(ServerTimestamp &&) = delete;
+
+    ~ServerTimestamp();
+    static std::shared_ptr<ServerTimestamp> from_milliseconds(uint64_t milliseconds);
+    std::string as_string();
+
+private:
+    ServerTimestamp(void *);
 
     void *instance;
 };
@@ -581,6 +540,15 @@ struct InvalidData: EncryptionError {
 };
 } // namespace encryption_error
 
+
+enum class ErrorCode: int32_t {
+    kAuthenticationError = 1,
+    kSerializationError = 2,
+    kInvalidData = 3,
+    kIoError = 4,
+    kServerError = 5
+};
+
 namespace uniffi {
 struct FfiConverterTypeSerializationError;
 } // namespace uniffi
@@ -619,6 +587,11 @@ struct BadData: SerializationError {
     }
 };
 } // namespace serialization_error
+
+
+enum class Status: int32_t {
+    kOk = 1
+};
 
 namespace uniffi {struct RustStreamBuffer: std::basic_streambuf<char> {
     RustStreamBuffer(RustBuffer *buf) {
@@ -722,20 +695,20 @@ struct FfiConverterBytes {
     static int32_t allocation_size(const std::vector<uint8_t> &);
 };
 
+struct FfiConverterDecay {
+    static std::shared_ptr<Decay> lift(void *);
+    static void *lower(const std::shared_ptr<Decay> &);
+    static std::shared_ptr<Decay> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<Decay> &);
+    static int32_t allocation_size(const std::shared_ptr<Decay> &);
+};
+
 struct FfiConverterDecayQuery {
     static std::shared_ptr<DecayQuery> lift(void *);
     static void *lower(const std::shared_ptr<DecayQuery> &);
     static std::shared_ptr<DecayQuery> read(RustStream &);
     static void write(RustStream &, const std::shared_ptr<DecayQuery> &);
     static int32_t allocation_size(const std::shared_ptr<DecayQuery> &);
-};
-
-struct FfiConverterDecaySerializer {
-    static std::shared_ptr<DecaySerializer> lift(void *);
-    static void *lower(const std::shared_ptr<DecaySerializer> &);
-    static std::shared_ptr<DecaySerializer> read(RustStream &);
-    static void write(RustStream &, const std::shared_ptr<DecaySerializer> &);
-    static int32_t allocation_size(const std::shared_ptr<DecaySerializer> &);
 };
 
 struct FfiConverterDuration {
@@ -810,20 +783,20 @@ struct FfiConverterSerializable {
     static int32_t allocation_size(const std::shared_ptr<Serializable> &);
 };
 
-struct FfiConverterServerErrorSerializer {
-    static std::shared_ptr<ServerErrorSerializer> lift(void *);
-    static void *lower(const std::shared_ptr<ServerErrorSerializer> &);
-    static std::shared_ptr<ServerErrorSerializer> read(RustStream &);
-    static void write(RustStream &, const std::shared_ptr<ServerErrorSerializer> &);
-    static int32_t allocation_size(const std::shared_ptr<ServerErrorSerializer> &);
+struct FfiConverterServerError {
+    static std::shared_ptr<ServerError> lift(void *);
+    static void *lower(const std::shared_ptr<ServerError> &);
+    static std::shared_ptr<ServerError> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<ServerError> &);
+    static int32_t allocation_size(const std::shared_ptr<ServerError> &);
 };
 
-struct FfiConverterServerStatusSerializer {
-    static std::shared_ptr<ServerStatusSerializer> lift(void *);
-    static void *lower(const std::shared_ptr<ServerStatusSerializer> &);
-    static std::shared_ptr<ServerStatusSerializer> read(RustStream &);
-    static void write(RustStream &, const std::shared_ptr<ServerStatusSerializer> &);
-    static int32_t allocation_size(const std::shared_ptr<ServerStatusSerializer> &);
+struct FfiConverterServerStatus {
+    static std::shared_ptr<ServerStatus> lift(void *);
+    static void *lower(const std::shared_ptr<ServerStatus> &);
+    static std::shared_ptr<ServerStatus> read(RustStream &);
+    static void write(RustStream &, const std::shared_ptr<ServerStatus> &);
+    static int32_t allocation_size(const std::shared_ptr<ServerStatus> &);
 };
 
 struct FfiConverterServerTimestamp {
@@ -850,36 +823,12 @@ struct FfiConverterTimestamp {
     static int32_t allocation_size(const std::shared_ptr<Timestamp> &);
 };
 
-struct FfiConverterTypeDecay {
-    static Decay lift(RustBuffer);
-    static RustBuffer lower(const Decay &);
-    static Decay read(RustStream &);
-    static void write(RustStream &, const Decay &);
-    static int32_t allocation_size(const Decay &);
-};
-
 struct FfiConverterTypeKeys {
     static Keys lift(RustBuffer);
     static RustBuffer lower(const Keys &);
     static Keys read(RustStream &);
     static void write(RustStream &, const Keys &);
     static int32_t allocation_size(const Keys &);
-};
-
-struct FfiConverterTypeServerError {
-    static ServerError lift(RustBuffer);
-    static RustBuffer lower(const ServerError &);
-    static ServerError read(RustStream &);
-    static void write(RustStream &, const ServerError &);
-    static int32_t allocation_size(const ServerError &);
-};
-
-struct FfiConverterTypeServerStatus {
-    static ServerStatus lift(RustBuffer);
-    static RustBuffer lower(const ServerStatus &);
-    static ServerStatus read(RustStream &);
-    static void write(RustStream &, const ServerStatus &);
-    static int32_t allocation_size(const ServerStatus &);
 };
 
 struct FfiConverterTypeEncryptionError {
@@ -935,5 +884,6 @@ std::string decay_message_tag();
 std::string server_error_message_tag();
 std::string server_status_message_tag();
 Keys generate_new_keys();
+uint8_t parse_request_id(const std::string &data);
 std::string serialize_me(const std::shared_ptr<Serializable> &msg, uint8_t request_id);
 } // namespace logic

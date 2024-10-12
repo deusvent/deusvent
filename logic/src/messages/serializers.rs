@@ -98,7 +98,7 @@ impl ClientPublicMessage {
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
     ) -> Result<String, SerializationError> {
         let data = encode_to_binary(msg, request_id)?;
         Ok(ClientPublicMessage::encode_to_string(&data, tag))
@@ -123,7 +123,7 @@ impl ClientPlayerMessage {
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
         public_key: &PublicKey,
         private_key: &PrivateKey,
     ) -> Result<String, SerializationError> {
@@ -176,7 +176,7 @@ impl ServerMessage {
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
     ) -> Result<String, SerializationError> {
         let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
         let serialized = binary_encoding::encode_base94(&data);
@@ -218,7 +218,7 @@ impl ServerMessage {
 
 fn encode_to_binary(
     msg: &impl bincode::Encode,
-    request_id: u8,
+    request_id: RequestId,
 ) -> Result<Vec<u8>, SerializationError> {
     let config = bincode::config::standard();
 
@@ -247,6 +247,16 @@ where
     let payload = &data[..&data.len() - 1];
     let instance: T = bincode::decode_from_slice(payload, bincode::config::standard())?.0;
     Ok((instance, request_id))
+}
+
+/// Decode string back to the request_id or fallback to 0 value
+#[uniffi::export]
+pub fn parse_request_id(data: String) -> RequestId {
+    binary_encoding::decode_request_id(data.as_bytes()).unwrap_or({
+        // Maybe it would make more sense to simply crash in this case as unparsable request id
+        // means message is terribly broken or receiving logic is wrong
+        0
+    })
 }
 
 #[cfg(test)]

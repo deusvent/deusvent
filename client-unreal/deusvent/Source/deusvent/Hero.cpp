@@ -16,9 +16,15 @@ void AHero::BeginPlay() {
     // Testing of WebSocket connection
     const auto GameInstance =
         Cast<UMainPlatformGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-    GameInstance->Connection->OnCommonServerInfo().AddLambda(
-        [](FString Message) { UE_LOGFMT(LogTemp, Display, "OnServerInfo: {0}", Message); });
 
-    GameInstance->Connection->SendPing();
-    GameInstance->Connection->SendDecayQuery();
+    GameInstance->Connection->SendPublicMessage<logic::ServerStatus>(logic::Ping::init())
+        .Next([](std::variant<std::shared_ptr<logic::ServerStatus>,
+                              std::shared_ptr<logic::ServerError>> Response) {
+            if (auto ServerStatus = std::get_if<std::shared_ptr<logic::ServerStatus>>(&Response)) {
+                UE_LOGFMT(LogTemp,
+                          Display,
+                          "Got server info: {0}",
+                          FString(ServerStatus->get()->debug_string().c_str()));
+            }
+        });
 }
