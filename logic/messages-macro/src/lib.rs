@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput, LitInt};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, LitInt};
 
 use lazy_static::lazy_static;
 use std::collections::HashMap;
@@ -47,16 +47,11 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         message_tags.insert(message_tag, struct_name.clone());
     }
 
-    let message_serializer = syn::Ident::new(
-        &format!("{}Serializer", struct_name_ident),
-        struct_name_ident.span(),
-    );
-
     let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
 
     let expanded = quote! {
         #[doc = concat!("Message tag = ", #message_tag_encoded)]
-        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
+        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Object, Clone)]
         #input
 
         #[cfg(feature = "server")]
@@ -79,45 +74,17 @@ pub fn client_public_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             }
         }
 
-
-        // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
-        // struct will be responsible for data encoding
-        #[cfg(feature="uniffi")]
-        #[derive(uniffi::Object)]
-        struct #message_serializer {
-            data: #struct_name_ident,
-            request_id: u8,
-        }
-
-        #[cfg(feature="uniffi")]
+        #[cfg(all(feature = "uniffi", not(feature = "server")))]
         #[uniffi::export]
-        impl #message_serializer {
-            #[doc = "Creates new message serializer"]
-            #[uniffi::constructor]
-            pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {data, request_id: 0})
-            }
-
-            #[doc = "Returns underlying message"]
-            pub fn data(&self) -> #struct_name_ident {
-                self.data.clone()
-            }
-
+        impl #struct_name_ident {
             #[doc = "Serialize underlying message to string"]
             pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ClientPublicMessage::serialize(&self.data, #message_tag, request_id)
-            }
-
-            #[doc = "Deserialize string to the underlying message type"]
-            #[uniffi::constructor]
-            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
-                let data: (#struct_name_ident, u8) = crate::messages::serializers::ClientPublicMessage::deserialize(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self {data: data.0, request_id: data.1.into()}))
+                crate::messages::serializers::ClientPublicMessage::serialize(&self, #message_tag, request_id)
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
-                format!("{:?}", self.data)
+                format!("{:?}", self)
             }
         }
     };
@@ -148,16 +115,11 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
         message_tags.insert(message_tag, struct_name.clone());
     }
 
-    let message_serializer = syn::Ident::new(
-        &format!("{}Serializer", struct_name_ident),
-        struct_name_ident.span(),
-    );
-
     let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
 
     let expanded = quote! {
         #[doc = concat!("Message tag = ", #message_tag_encoded)]
-        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
+        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Object, Clone)]
         #input
 
         #[cfg(feature = "server")]
@@ -179,57 +141,17 @@ pub fn client_player_message(attr: TokenStream, item: TokenStream) -> TokenStrea
             }
         }
 
-        // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
-        // struct will be responsible for data encoding
-        #[cfg(feature="uniffi")]
-        #[derive(uniffi::Object)]
-        struct #message_serializer {
-            data: #struct_name_ident,
-            public_key: std::sync::Arc<crate::encryption::PublicKey>,
-            request_id: u8,
-        }
-
-        #[cfg(feature="uniffi")]
+        #[cfg(all(feature = "uniffi", not(feature = "server")))]
         #[uniffi::export]
-        impl #message_serializer {
-            #[doc = "Creates new serializer"]
-            #[uniffi::constructor]
-            pub fn new(data: #struct_name_ident, public_key: std::sync::Arc<crate::encryption::PublicKey>) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {
-                    data,
-                    public_key,
-                    request_id: 0,
-                })
-            }
-
-            #[doc = "Returns underlying message"]
-            pub fn data(&self) -> #struct_name_ident {
-                self.data.clone()
-            }
-
+        impl #struct_name_ident {
             #[doc = "Serialize underlying message to string which will include player public key and will be signed to proof it's validity"]
-            pub fn serialize(&self, request_id: u8, private_key: std::sync::Arc<crate::encryption::PrivateKey>) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ClientPlayerMessage::serialize(&self.data, #message_tag, request_id, self.public_key.as_ref(), private_key.as_ref())
-            }
-
-            #[doc = "Deserialize string to the underlying message type and included public_key as a string. Returns error if signature is not valid"]
-            #[uniffi::constructor]
-            pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
-                let data: (
-                    #struct_name_ident,
-                    std::sync::Arc<crate::encryption::PublicKey>,
-                    u8,
-                ) = crate::messages::serializers::ClientPlayerMessage::deserialize::<#struct_name_ident>(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self {
-                    data: data.0,
-                    public_key: data.1,
-                    request_id: data.2,
-                }))
+            pub fn serialize(&self, request_id: u8, keys: crate::encryption::Keys) -> Result<String, crate::messages::serializers::SerializationError> {
+                crate::messages::serializers::ClientPlayerMessage::serialize(&self, #message_tag, request_id, keys.public_key.as_ref(), keys.private_key.as_ref())
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
-                format!("{:?}", self.data)
+                format!("{:?}", self)
             }
         }
     };
@@ -266,16 +188,38 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
         struct_name_ident.span(),
     );
 
-    let message_serializer = syn::Ident::new(
-        &format!("{}Serializer", struct_name_ident),
-        struct_name_ident.span(),
-    );
-
     let message_tag_encoded = binary_encoding::encode_message_tag(message_tag);
+
+    let getters = if let Data::Struct(data_struct) = input.clone().data {
+        match data_struct.fields {
+            Fields::Named(fields) => {
+                let fields2 = fields.clone();
+                fields2
+                    .named
+                    .iter()
+                    .map(|field| {
+                        let field_name = &field.ident;
+                        let field_type = &field.ty;
+                        quote! {
+                            #[doc = "Getter, returns clone of the underlying value"]
+                            pub fn #field_name(&self) -> #field_type {
+                                self.#field_name.clone()
+                            }
+                        }
+                    })
+                    .collect::<Vec<_>>()
+            }
+            _ => {
+                panic!("Getters can only be derived for structs with named fields");
+            }
+        }
+    } else {
+        panic!("Getters can only be derived for structs");
+    };
 
     let expanded = quote! {
         #[doc = concat!("Message tag = ", #message_tag_encoded)]
-        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Record, Clone)]
+        #[derive(std::cmp::PartialEq, std::fmt::Debug, bincode::Decode, bincode::Encode, uniffi::Object, Clone)]
         #input
 
         // For server we can have serializing logic on a struct itself, it makes things easier to work with
@@ -291,57 +235,24 @@ pub fn server_message(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
 
-        // Because of limitation of uniffi we can't add methods to uniffi::Record, so we create a second
-        // struct will be responsible for data encoding
-        #[cfg(feature="uniffi")]
-        #[derive(uniffi::Object)]
-        struct #message_serializer {
-            data: #struct_name_ident,
-            request_id: u8,
-        }
-
         // To avoid conflict with duplicated "serialize" function enable it only when server is turned off
         // otherwise `cargo build --all-features` fails
         #[cfg(all(feature = "uniffi", not(feature = "server")))]
         #[uniffi::export]
-        impl #message_serializer {
-            #[doc = "Creates new message serializer"]
-            #[uniffi::constructor]
-            pub fn new(data: #struct_name_ident) -> std::sync::Arc<Self> {
-                std::sync::Arc::new(Self {
-                    data,
-                    request_id: 0,
-                })
-            }
-
-            #[doc = "Returns underlying message"]
-            pub fn data(&self) -> #struct_name_ident {
-                // TODO Can't we get rid of clone? It's because of uniffi, but it also used
-                //      in ::serialize, so it's extra clone
-                self.data.clone()
-            }
-
-            #[doc = "Returns client message request identifier for which this message was created"]
-            pub fn request_id(&self) -> u8 {
-                self.request_id
-            }
-
-            #[doc = "Serialize underlying message to string"]
-            pub fn serialize(&self, request_id: u8) -> Result<String, crate::messages::serializers::SerializationError> {
-                crate::messages::serializers::ServerMessage::serialize(&self.data, #message_tag, request_id)
-            }
-
+        impl #struct_name_ident {
             #[doc = "Deserialize string to the underlying message type"]
             #[uniffi::constructor]
             pub fn deserialize(data: String) -> Result<std::sync::Arc<Self>, crate::messages::serializers::SerializationError> {
                 let data: (#struct_name_ident, u8) = crate::messages::serializers::ServerMessage::deserialize(&data, #message_tag)?;
-                Ok(std::sync::Arc::new(Self{data: data.0, request_id: data.1}))
+                Ok(std::sync::Arc::new(data.0))
             }
 
             #[doc = "Easy way to quickly output underlying message to the string for debugging purposes"]
             pub fn debug_string(&self) -> String {
-                format!("{:?}", self.data)
+                format!("{:?}", self)
             }
+
+            #(#getters)*
         }
 
         #[doc = "Return message tag string"]

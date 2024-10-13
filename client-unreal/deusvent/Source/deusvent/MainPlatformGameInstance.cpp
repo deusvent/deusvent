@@ -3,7 +3,9 @@
 
 void UMainPlatformGameInstance::Init() {
     Super::Init();
-    Connection = NewObject<UConnection>(this, UConnection::StaticClass());
-    Connection->Initialize("https://api.deusvent.com");
-    Connection->Connect();
+    // TODO Temp keys for now
+    auto Keys = logic::generate_new_keys();
+    // Pass this to ensure connection has access to game world and timer manager
+    Connection = NewObject<UConnection>(this);
+    Connection->Init("wss://api.deusvent.com", Keys);
 }

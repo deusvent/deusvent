@@ -55,7 +55,7 @@ mod tests {
         let msg = DecayQuery {};
         let now = ServerTimestamp::from_milliseconds_pure(10);
         let response = process_message(msg, 1, now.clone()).unwrap();
-        assert_eq!(response, "-/<whrHUB6=QUX@");
+        assert_eq!(response, "-/-.+8GP/R@<_.Ht");
         let (decay, req_id) = Decay::deserialize(&response).unwrap();
         assert_eq!(*decay.started_at, now);
         assert_eq!(decay.length.whole_days(), DECAY_DURATION_DAYS);

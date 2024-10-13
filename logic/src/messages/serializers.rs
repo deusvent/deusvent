@@ -2,15 +2,15 @@
 //!
 //! There are 3 types of messages:
 //! 1) Server messages are created on a server and send to clients. They are transferred as bincode data encoded
-//!    in Base94 strings
-//! 2) Public client messages are send from clients to server. They don't have any player specific information and
-//!    don't contain any authentication tokens. They are encoded as JSON like {"k":[MESSAGE_TAG], "v":[MESSAGE_PAYLOAD]}
+//!    in Base94
+//! 2) Public client messages which are sent from clients to server. They don't have any player specific information and
+//!    don't contain any authentication tokens. They are encoded as JSON like {"k":[MESSAGE_TAG],"v":[MESSAGE_PAYLOAD]}
 //! 3) Player signed messages. Such messages are player specific and includes player identifier (public_key) and also
 //!    a signature for the payload and as a proof that player identifier is correct one
 
 use std::sync::Arc;
 
-use binary_encoding::encode_message_tag;
+use binary_encoding::{decode_request_id, encode_message_tag, encode_request_id, REQUEST_ID_LEN};
 
 use crate::encryption::{self, PrivateKey, PublicKey, PUBLIC_KEY_SIZE, SIGNATURE_SIZE};
 
@@ -98,7 +98,7 @@ impl ClientPublicMessage {
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
     ) -> Result<String, SerializationError> {
         let data = encode_to_binary(msg, request_id)?;
         Ok(ClientPublicMessage::encode_to_string(&data, tag))
@@ -123,7 +123,7 @@ impl ClientPlayerMessage {
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
         public_key: &PublicKey,
         private_key: &PrivateKey,
     ) -> Result<String, SerializationError> {
@@ -170,16 +170,22 @@ impl ClientPlayerMessage {
 /// Serializer for messages coming from the server to the client
 pub struct ServerMessage;
 impl ServerMessage {
-    /// Serialize server message using bincode and Base94. First 2 bytes are message tag which
-    /// allows clients efficiently check what kind of message it receive and deserialize it appropriately
+    /// Serialize server message using bincode and Base94. First 2 bytes are message tag, then next 2 bytes are
+    /// request id. Having those prefixes allows clients efficiently check what kind of message it receive and
+    /// process it appropriately
     pub fn serialize(
         msg: &impl bincode::Encode,
         tag: u16,
-        request_id: u8,
+        request_id: RequestId,
     ) -> Result<String, SerializationError> {
-        let data = encode_to_binary(msg, request_id)?;
+        let data = bincode::encode_to_vec(msg, bincode::config::standard())?;
         let serialized = binary_encoding::encode_base94(&data);
-        Ok(format!("{}{}", encode_message_tag(tag), serialized))
+        Ok(format!(
+            "{}{}{}",
+            encode_message_tag(tag),
+            encode_request_id(request_id),
+            serialized
+        ))
     }
 
     /// Deserialize string to the server message, it will return an error if supplied message tag
@@ -189,21 +195,30 @@ impl ServerMessage {
         T: bincode::Decode,
     {
         let message_tag = encode_message_tag(tag);
+        let total_len = message_tag.len() + REQUEST_ID_LEN;
+        if data.len() < total_len {
+            return Err(SerializationError::BadData {
+                msg: "Data too short".to_string(),
+            });
+        }
         if !data.starts_with(&message_tag) {
             return Err(SerializationError::BadData {
                 msg: "Bad message tag".to_string(),
             });
         }
-        let input = &data[message_tag.len()..];
+        let request_id = decode_request_id(
+            data[message_tag.len()..message_tag.len() + REQUEST_ID_LEN].as_bytes(),
+        )?;
+        let input = &data[message_tag.len() + REQUEST_ID_LEN..];
         let decoded = binary_encoding::decode_base94(input)?;
-        let (instance, request_id) = decode_from_binary::<T>(&decoded)?;
+        let instance: T = bincode::decode_from_slice(&decoded, bincode::config::standard())?.0;
         Ok((instance, request_id))
     }
 }
 
 fn encode_to_binary(
     msg: &impl bincode::Encode,
-    request_id: u8,
+    request_id: RequestId,
 ) -> Result<Vec<u8>, SerializationError> {
     let config = bincode::config::standard();
 
@@ -225,13 +240,23 @@ where
 {
     if data.is_empty() {
         return Err(SerializationError::BadData {
-            msg: "Too short data to decode".to_string(),
+            msg: "Data too short".to_string(),
         });
     }
     let request_id = data[data.len() - 1];
     let payload = &data[..&data.len() - 1];
     let instance: T = bincode::decode_from_slice(payload, bincode::config::standard())?.0;
     Ok((instance, request_id))
+}
+
+/// Decode string back to the request_id or fallback to 0 value
+#[uniffi::export]
+pub fn parse_request_id(data: String) -> RequestId {
+    binary_encoding::decode_request_id(data.as_bytes()).unwrap_or({
+        // Maybe it would make more sense to simply crash in this case as unparsable request id
+        // means message is terribly broken or receiving logic is wrong
+        0
+    })
 }
 
 #[cfg(test)]
@@ -294,8 +319,8 @@ mod tests {
             status: Status::OK,
         };
         let data = ServerMessage::serialize(&msg, 1, 1).unwrap();
-        assert_eq!(data, "-.(H4");
-        assert_eq!(data.len(), 5); // 2(tag) + 1(timestamp) + 1(status) + 1(request_id)
+        assert_eq!(data, "-.-.#f");
+        assert_eq!(data.len(), 6); // 2(tag) + 2(request_id) + 1(timestamp) + 1(status)
         let got: (ServerStatus, RequestId) = ServerMessage::deserialize(&data, 1).unwrap();
         assert_eq!(got.0, msg);
         assert_eq!(got.1, 1)

@@ -29,3 +29,12 @@ pub struct ServerStatus {
 /// Client ping message
 #[client_public_message(1)]
 pub struct Ping {}
+
+#[uniffi::export]
+impl Ping {
+    /// Create new ping message
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {})
+    }
+}
