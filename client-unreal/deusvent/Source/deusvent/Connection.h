@@ -3,14 +3,16 @@
 #include "CoreMinimal.h"
 #include "IWebSocket.h"
 #include "logic/logic.hpp"
+#include "Containers/MpscQueue.h"
 #include "Connection.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogConnection, Log, All);
 
+// TODO Make it thread safe
+
 // Creates a websocket connection with the backend API
 UCLASS()
 class DEUSVENT_API UConnection : public UObject {
-
     GENERATED_BODY()
 
   public:
@@ -31,7 +33,7 @@ class DEUSVENT_API UConnection : public UObject {
     TMap<uint8, TFunction<void(FString)>> Callbacks;
 
     // Queue for all outgoing messages - contains serialized payload to be sent
-    TQueue<FString> OutgoingMessages;
+    TMpscQueue<FString> OutgoingMessages;
 
     logic::Keys Keys;
     TSharedPtr<IWebSocket> Connection;

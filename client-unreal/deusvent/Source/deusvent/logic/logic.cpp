@@ -37,10 +37,6 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_func_serialize_me() != 8171) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
     if (uniffi_logic_checksum_method_decay_debug_string() != 57020) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
@@ -93,10 +89,6 @@ void ensure_initialized() {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
-    if (uniffi_logic_checksum_method_ping2_serialize() != 27235) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
     if (uniffi_logic_checksum_method_privatekey_serialize() != 39381) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
@@ -106,10 +98,6 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_method_publickey_serialize() != 18621) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_method_serializable_serialize() != 65412) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -190,10 +178,6 @@ void ensure_initialized() {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
     if (uniffi_logic_checksum_constructor_ping_new() != 18958) {
-        throw std::runtime_error(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
-    }
-    if (uniffi_logic_checksum_constructor_ping2_new() != 24007) {
         throw std::runtime_error(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -626,26 +610,6 @@ Ping::~Ping() {
     uniffi::rust_call(uniffi_logic_fn_free_ping, nullptr, this->instance);
 }
 
-Ping2::Ping2(void *ptr) : instance(ptr) {
-}
-
-std::shared_ptr<Ping2> Ping2::init() {
-    return std::shared_ptr<Ping2>(
-        new Ping2(uniffi::rust_call(uniffi_logic_fn_constructor_ping2_new, nullptr)));
-}
-
-std::string Ping2::serialize(uint8_t request_id) {
-    return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_ping2_serialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          this->instance,
-                          uniffi::FfiConverterUInt8::lower(request_id)));
-}
-
-Ping2::~Ping2() {
-    uniffi::rust_call(uniffi_logic_fn_free_ping2, nullptr, this->instance);
-}
-
 PlayerId::PlayerId(void *ptr) : instance(ptr) {
 }
 
@@ -693,21 +657,6 @@ std::vector<uint8_t> PublicKey::serialize() {
 
 PublicKey::~PublicKey() {
     uniffi::rust_call(uniffi_logic_fn_free_publickey, nullptr, this->instance);
-}
-
-Serializable::Serializable(void *ptr) : instance(ptr) {
-}
-
-std::string Serializable::serialize(uint8_t request_id) {
-    return uniffi::FfiConverterString::lift(
-        uniffi::rust_call(uniffi_logic_fn_method_serializable_serialize,
-                          uniffi::FfiConverterTypeSerializationError::lift,
-                          this->instance,
-                          uniffi::FfiConverterUInt8::lower(request_id)));
-}
-
-Serializable::~Serializable() {
-    uniffi::rust_call(uniffi_logic_fn_free_serializable, nullptr, this->instance);
 }
 
 ServerError::ServerError(void *ptr) : instance(ptr) {
@@ -998,29 +947,6 @@ int32_t FfiConverterPing::allocation_size(const std::shared_ptr<Ping> &) {
     return 8;
 }
 
-std::shared_ptr<Ping2> FfiConverterPing2::lift(void *ptr) {
-    return std::shared_ptr<Ping2>(new Ping2(ptr));
-}
-
-void *FfiConverterPing2::lower(const std::shared_ptr<Ping2> &obj) {
-    return obj->instance;
-}
-
-std::shared_ptr<Ping2> FfiConverterPing2::read(RustStream &stream) {
-    std::uintptr_t ptr;
-    stream >> ptr;
-
-    return std::shared_ptr<Ping2>(new Ping2(reinterpret_cast<void *>(ptr)));
-}
-
-void FfiConverterPing2::write(RustStream &stream, const std::shared_ptr<Ping2> &obj) {
-    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
-}
-
-int32_t FfiConverterPing2::allocation_size(const std::shared_ptr<Ping2> &) {
-    return 8;
-}
-
 std::shared_ptr<PlayerId> FfiConverterPlayerId::lift(void *ptr) {
     return std::shared_ptr<PlayerId>(new PlayerId(ptr));
 }
@@ -1087,29 +1013,6 @@ void FfiConverterPublicKey::write(RustStream &stream, const std::shared_ptr<Publ
 }
 
 int32_t FfiConverterPublicKey::allocation_size(const std::shared_ptr<PublicKey> &) {
-    return 8;
-}
-
-std::shared_ptr<Serializable> FfiConverterSerializable::lift(void *ptr) {
-    return std::shared_ptr<Serializable>(new Serializable(ptr));
-}
-
-void *FfiConverterSerializable::lower(const std::shared_ptr<Serializable> &obj) {
-    return obj->instance;
-}
-
-std::shared_ptr<Serializable> FfiConverterSerializable::read(RustStream &stream) {
-    std::uintptr_t ptr;
-    stream >> ptr;
-
-    return std::shared_ptr<Serializable>(new Serializable(reinterpret_cast<void *>(ptr)));
-}
-
-void FfiConverterSerializable::write(RustStream &stream, const std::shared_ptr<Serializable> &obj) {
-    stream << reinterpret_cast<std::uintptr_t>(obj->instance);
-}
-
-int32_t FfiConverterSerializable::allocation_size(const std::shared_ptr<Serializable> &) {
     return 8;
 }
 
@@ -1657,14 +1560,5 @@ uint8_t parse_request_id(const std::string &data) {
         uniffi_logic_fn_func_parse_request_id, nullptr, uniffi::FfiConverterString::lower(data));
 
     return uniffi::FfiConverterUInt8::lift(ret);
-}
-
-std::string serialize_me(const std::shared_ptr<Serializable> &msg, uint8_t request_id) {
-    auto ret = uniffi::rust_call(uniffi_logic_fn_func_serialize_me,
-                                 uniffi::FfiConverterTypeSerializationError::lift,
-                                 uniffi::FfiConverterSerializable::lower(msg),
-                                 uniffi::FfiConverterUInt8::lower(request_id));
-
-    return uniffi::FfiConverterString::lift(ret);
 }
 } // namespace logic

@@ -35,7 +35,7 @@ void UConnection::Init(const char *ServerAddress, const logic::Keys &PlayerKeys)
     });
 
     Connection->OnConnectionError().AddLambda([this](const FString &Error) {
-        UE_LOGFMT(LogConnection, Display, "Connection error: {0}", Error);
+        UE_LOGFMT(LogConnection, Verbose, "Connection error: {0}", Error);
         this->Reconnect(0.3);
     });
 
@@ -88,7 +88,7 @@ void UConnection::Init(const char *ServerAddress, const logic::Keys &PlayerKeys)
     });
 
     Connection->OnMessageSent().AddLambda([](const FString &Message) {
-        UE_LOGFMT(LogConnection, Display, "Message sent: {0}", Message);
+        UE_LOGFMT(LogConnection, Verbose, "Message sent: {0}", Message);
     });
 
     this->Reconnect(0);
@@ -103,37 +103,29 @@ void UConnection::Disconnect() {
 
 void UConnection::TryToSendMessages() {
     if (!this->Connection->IsConnected()) {
+        UE_LOGFMT(LogTemp, Verbose, "No connection yet");
         return; // No connection yet
     }
 
     FString Data;
     while (this->OutgoingMessages.Dequeue(Data)) {
+        UE_LOGFMT(LogTemp, Display, "Sending data {0}", Data);
         this->Connection->Send(Data);
     }
 }
 
 void UConnection::Reconnect(float DelaySeconds) {
-    if (UWorld *World = GetWorld()) {
-        World->GetTimerManager().SetTimer(
-            this->ReconnectTimerHandle,
-            [this]() {
-                UE_LOGFMT(LogConnection, Display, "Reconnecting...");
-                this->Connection->Connect();
-            },
-            DelaySeconds,
-            false);
-    } else {
-        // If GameWorld is not accessible (like in unit tests) - fallback to std::thread + sleep
-        std::thread([this, DelaySeconds]() {
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(static_cast<int>(DelaySeconds * 1000)));
-            // Get back to the main game thread
-            AsyncTask(ENamedThreads::GameThread, [this]() {
-                UE_LOGFMT(LogConnection, Display, "Reconnecting (from unit test thread)...");
-                this->Connection->Connect();
-            });
-        }).detach();
+    if (DelaySeconds == 0) {
+        this->Connection->Connect();
     }
+    GetWorld()->GetTimerManager().SetTimer(
+        this->ReconnectTimerHandle,
+        [this]() {
+            UE_LOGFMT(LogConnection, Verbose, "Reconnecting...");
+            this->Connection->Connect();
+        },
+        DelaySeconds,
+        false);
 }
 
 uint8 UConnection::NextRequestId() {

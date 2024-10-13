@@ -11,5 +11,6 @@ class DEUSVENT_API UMainPlatformGameInstance : public UPlatformGameInstance {
 
   public:
     virtual void Init() override;
+    UPROPERTY()
     UConnection *Connection;
 };

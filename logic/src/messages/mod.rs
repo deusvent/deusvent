@@ -34,45 +34,6 @@ pub mod common;
 pub mod game;
 pub mod serializers;
 
-#[uniffi::export]
-/// Test interface
-pub trait Serializable: Send + Sync {
-    /// Dump to string
-    fn serialize(&self, request_id: u8) -> Result<String, SerializationError>;
-}
-
-/// Tempo struct
-#[derive(uniffi::Object)]
-pub struct Ping2 {
-    /// Tempo counter
-    pub counter: u8,
-}
-
-#[uniffi::export]
-impl Ping2 {
-    /// Fooo
-    #[uniffi::constructor]
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self { counter: 0 })
-    }
-}
-
-#[uniffi::export]
-impl Serializable for Ping2 {
-    fn serialize(&self, request_id: u8) -> Result<String, SerializationError> {
-        Ok(format!("Ping={request_id}"))
-    }
-}
-
-#[uniffi::export]
-/// Some comment
-pub fn serialize_me(
-    msg: &Arc<dyn Serializable>,
-    request_id: u8,
-) -> Result<String, SerializationError> {
-    msg.serialize(request_id)
-}
-
 /// Trait for all public client messages, public meaning no authentication context is needed
 pub trait ClientPublicMessage {
     /// Returns message tag

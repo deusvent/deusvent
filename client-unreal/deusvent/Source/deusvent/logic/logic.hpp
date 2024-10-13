@@ -23,11 +23,9 @@ struct Duration;
 struct EncryptedString;
 struct Identity;
 struct Ping;
-struct Ping2;
 struct PlayerId;
 struct PrivateKey;
 struct PublicKey;
-struct Serializable;
 struct ServerError;
 struct ServerStatus;
 struct ServerTimestamp;
@@ -39,6 +37,31 @@ enum class ErrorCode;
 struct SafeString;
 struct SerializationError;
 enum class Status;
+
+namespace uniffi {
+    struct FfiConverterEncryptedString;
+} // namespace uniffi
+
+struct EncryptedString {
+    friend uniffi::FfiConverterEncryptedString;
+
+    EncryptedString() = delete;
+
+    EncryptedString(const EncryptedString &) = delete;
+    EncryptedString(EncryptedString &&) = delete;
+
+    EncryptedString &operator=(const EncryptedString &) = delete;
+    EncryptedString &operator=(EncryptedString &&) = delete;
+
+    ~EncryptedString();
+    static std::shared_ptr<EncryptedString> init(const std::string &plaintext, const std::shared_ptr<PrivateKey> &private_key);
+    std::string decrypt(const std::shared_ptr<PrivateKey> &private_key);
+
+private:
+    EncryptedString(void *);
+
+    void *instance;
+};
 
 namespace uniffi {
     struct FfiConverterPublicKey;
@@ -87,31 +110,6 @@ struct PrivateKey {
 
 private:
     PrivateKey(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterEncryptedString;
-} // namespace uniffi
-
-struct EncryptedString {
-    friend uniffi::FfiConverterEncryptedString;
-
-    EncryptedString() = delete;
-
-    EncryptedString(const EncryptedString &) = delete;
-    EncryptedString(EncryptedString &&) = delete;
-
-    EncryptedString &operator=(const EncryptedString &) = delete;
-    EncryptedString &operator=(EncryptedString &&) = delete;
-
-    ~EncryptedString();
-    static std::shared_ptr<EncryptedString> init(const std::string &plaintext, const std::shared_ptr<PrivateKey> &private_key);
-    std::string decrypt(const std::shared_ptr<PrivateKey> &private_key);
-
-private:
-    EncryptedString(void *);
 
     void *instance;
 };
@@ -295,31 +293,6 @@ private:
 };
 
 namespace uniffi {
-    struct FfiConverterPing2;
-} // namespace uniffi
-
-struct Ping2 {
-    friend uniffi::FfiConverterPing2;
-
-    Ping2() = delete;
-
-    Ping2(const Ping2 &) = delete;
-    Ping2(Ping2 &&) = delete;
-
-    Ping2 &operator=(const Ping2 &) = delete;
-    Ping2 &operator=(Ping2 &&) = delete;
-
-    ~Ping2();
-    static std::shared_ptr<Ping2> init();
-    std::string serialize(uint8_t request_id);
-
-private:
-    Ping2(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
     struct FfiConverterPlayerId;
 } // namespace uniffi
 
@@ -338,30 +311,6 @@ struct PlayerId {
 
 private:
     PlayerId(void *);
-
-    void *instance;
-};
-
-namespace uniffi {
-    struct FfiConverterSerializable;
-} // namespace uniffi
-
-struct Serializable {
-    friend uniffi::FfiConverterSerializable;
-
-    Serializable() = delete;
-
-    Serializable(const Serializable &) = delete;
-    Serializable(Serializable &&) = delete;
-
-    Serializable &operator=(const Serializable &) = delete;
-    Serializable &operator=(Serializable &&) = delete;
-
-    ~Serializable();
-    std::string serialize(uint8_t request_id);
-
-private:
-    Serializable(void *);
 
     void *instance;
 };
@@ -743,14 +692,6 @@ struct FfiConverterPing {
     static int32_t allocation_size(const std::shared_ptr<Ping> &);
 };
 
-struct FfiConverterPing2 {
-    static std::shared_ptr<Ping2> lift(void *);
-    static void *lower(const std::shared_ptr<Ping2> &);
-    static std::shared_ptr<Ping2> read(RustStream &);
-    static void write(RustStream &, const std::shared_ptr<Ping2> &);
-    static int32_t allocation_size(const std::shared_ptr<Ping2> &);
-};
-
 struct FfiConverterPlayerId {
     static std::shared_ptr<PlayerId> lift(void *);
     static void *lower(const std::shared_ptr<PlayerId> &);
@@ -773,14 +714,6 @@ struct FfiConverterPublicKey {
     static std::shared_ptr<PublicKey> read(RustStream &);
     static void write(RustStream &, const std::shared_ptr<PublicKey> &);
     static int32_t allocation_size(const std::shared_ptr<PublicKey> &);
-};
-
-struct FfiConverterSerializable {
-    static std::shared_ptr<Serializable> lift(void *);
-    static void *lower(const std::shared_ptr<Serializable> &);
-    static std::shared_ptr<Serializable> read(RustStream &);
-    static void write(RustStream &, const std::shared_ptr<Serializable> &);
-    static int32_t allocation_size(const std::shared_ptr<Serializable> &);
 };
 
 struct FfiConverterServerError {
@@ -885,5 +818,4 @@ std::string server_error_message_tag();
 std::string server_status_message_tag();
 Keys generate_new_keys();
 uint8_t parse_request_id(const std::string &data);
-std::string serialize_me(const std::shared_ptr<Serializable> &msg, uint8_t request_id);
 } // namespace logic
